@@ -1,0 +1,137 @@
+#!/bin/bash
+
+# auxiliary function to print out usage help
+usage()
+{
+    cat <<EOF
+Creates new Docker image for "rotating machine".
+
+Usage: $0 [options]
+
+Options: (defaults in [brackets] after descriptions)
+
+  --help                      print this help
+
+  --verbose                   produce verbose output
+
+  --dry-run                   do not execute any docker commands
+
+  --image-name                name of docker image to be produced
+                              [default: rotating_machine]
+
+  --extra-args                any extra arguments to be passed to
+                              docker run command when creating
+                              new container
+                              [default: <none>]
+
+EOF
+}
+
+# determine script working directory
+wd="`echo $0 | sed -n '/\//{s/\/[^\/]*$//;p;}'`"
+wd="`(cd "${wd}/..";pwd)`"
+
+# parameter (default) values
+verbose=
+dry_run=
+image_name="rotating_machine"
+extra_args=""
+
+# parse arguments
+for arg in "$@"; do
+  arg_consumed=
+  if echo $arg | grep "^--help" > /dev/null 2> /dev/null; then
+    usage
+    exit 0
+  fi
+  if echo $arg | grep "^--verbose" > /dev/null 2> /dev/null; then
+    verbose=true
+    arg_consumed=true
+  fi
+  if echo $arg | grep "^--dry-run" > /dev/null 2> /dev/null; then
+    dry_run=true
+    arg_consumed=true
+  fi
+  if echo $arg | grep "^--image-name" > /dev/null 2> /dev/null; then
+    image_name=`echo $arg | sed "s/^--image-name=//"`
+    arg_consumed=true
+  fi
+  if echo $arg | grep "^--extra-args" > /dev/null 2> /dev/null; then
+    extra_args=`echo $arg | sed "s/^--extra-args=//"`
+    arg_consumed=true
+  fi
+  if [ "x${arg_consumed}" == "x" ]; then
+    echo "Unknown argument: \"${arg}\""
+    echo
+    usage
+    exit 1
+  fi
+done
+
+# remove the image if it already exists
+if docker images | grep "${image_name}" > /dev/null 2> /dev/null; then
+  if [ "x${verbose}" != "x" ]; then
+    echo "Removing image \"${image_name}\""
+  fi
+  if [ "x${dry_run}" == "x" ]; then
+    docker rmi "${image_name}"
+  fi
+fi
+
+# create docker build directory with Dockerfile
+tempdir=`mktemp -d`
+if [ "x${verbose}" != "x" ]; then
+  echo "Docker build directory: ${tempdir}"
+fi
+cp ${wd}/scripts/Dockerfile ${tempdir}/.
+
+# add all enabled scripts
+scripts=( `find ${wd}/scripts/enabled/. -maxdepth 1 -not -type d -printf '%f\n' | sort` )
+if [ ${#scripts[@]} -ne 0 ]; then
+  # script directory need to be created in container
+  command="`cat <<EOF
+# run additional build scripts
+RUN mkdir /root/docker-scripts/
+@@scripts@@
+EOF
+`"
+  sed --in-place "s|@@scripts@@|`echo "${command}" | sed '{:q;N;s/\n/\\\\n/g;t q}'`|" ${tempdir}/Dockerfile
+
+  # all enabled scripts need to be added to container and executed during build
+  for script in "${scripts[@]}"; do
+    command="`cat <<EOF
+ADD ./${script} /root/docker-scripts/
+RUN /root/docker-scripts/${script}
+@@scripts@@
+EOF
+`"
+    sed --in-place "s|@@scripts@@|`echo "${command}" | sed '{:q;N;s/\n/\\\\n/g;t q}'`|" ${tempdir}/Dockerfile
+    cp ${wd}/scripts/enabled/${script} ${tempdir}/.
+    if [ "x${verbose}" != "x" ]; then
+      echo "Added script: ${script}"
+    fi
+  done
+fi
+# remove @@scripts@@ wildcard in Dockerfile
+sed --in-place "s|@@scripts@@||" ${tempdir}/Dockerfile
+
+# build image
+docker_build_command="docker build --rm=true --tag=\"${image_name}\""
+if [ "x${extra_args}" != "x" ]; then
+  docker_build_command="${docker_build_command} ${extra_args}"
+fi
+docker_build_command="${docker_build_command} ${tempdir}"
+if [ "x${verbose}" != "x" ]; then
+  echo "Building image \"${image_name}\": ${docker_build_command}"
+fi
+if [ "x${dry_run}" == "x" ]; then
+  eval "${docker_build_command}"
+fi
+
+# clean up
+rm -rf ${tempdir}
+
+
+# vim: set ts=2 sw=2 et:
+
+

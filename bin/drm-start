@@ -1,0 +1,115 @@
+#!/bin/bash
+
+# auxiliary function to print out usage help
+usage()
+{
+    cat <<EOF
+Creates new Docker container with given <container-name> accessible via SSH on local <ssh-port>.
+
+Usage: $0 <container-name> <ssh-port> [options]
+
+Options: (defaults in [brackets] after descriptions)
+
+  --help                      print this help
+
+  --verbose                   produce verbose output
+
+  --dry-run                   do not execute any docker commands
+
+  --shared-dir                path to the host machine's directory
+                              to be shared with container
+                              [deafult: <none>]
+
+  --mount-point               mount point on container's filesystem
+                              shared directory will be mounted at
+                              [deafult: /mnt]
+
+  --source-image              docker image to be used as template
+                              for container creation
+                              [default: rotating_machine]
+
+  --extra-args                any extra arguments to be passed to
+                              docker run command when creating
+                              new container
+                              [default: <none>]
+
+EOF
+}
+
+# check presence of <container-name> argument
+if [ $# -lt 2 ]; then
+  usage
+  exit 1
+fi
+
+# parameter (default) values
+container_name="$1"
+shift
+ssh_port="$1"
+shift
+verbose=
+dry_run=
+shared_dir=""
+mount_point="/mnt"
+source_image="rotating_machine"
+extra_args=""
+
+# parse arguments
+for arg in "$@"; do
+  arg_consumed=
+  if echo $arg | grep "^--help" > /dev/null 2> /dev/null; then
+    usage
+    exit 0
+  fi
+  if echo $arg | grep "^--verbose" > /dev/null 2> /dev/null; then
+    verbose=true
+    arg_consumed=true
+  fi
+  if echo $arg | grep "^--dry-run" > /dev/null 2> /dev/null; then
+    dry_run=true
+    arg_consumed=true
+  fi
+  if echo $arg | grep "^--shared-dir" > /dev/null 2> /dev/null; then
+    shared_dir=`echo $arg | sed "s/^--shared-dir=//"`
+    arg_consumed=true
+  fi
+  if echo $arg | grep "^--mount-point" > /dev/null 2> /dev/null; then
+    mount_point=`echo $arg | sed "s/^--mount-point=//"`
+    arg_consumed=true
+  fi
+  if echo $arg | grep "^--source-image" > /dev/null 2> /dev/null; then
+    source_image=`echo $arg | sed "s/^--source-image=//"`
+    arg_consumed=true
+  fi
+  if echo $arg | grep "^--extra-args" > /dev/null 2> /dev/null; then
+    extra_args=`echo $ararg | sed "s/^--extra-args=//"`
+    arg_consumed=true
+  fi
+  if [ "x${arg_consumed}" == "x" ]; then
+    echo "Unknown argument: \"${arg}\""
+    echo
+    usage
+    exit 1
+  fi
+done
+
+# create container
+docker_run_command="docker run --detach --name=\"${container_name}\" --publish=${ssh_port}:22"
+if [ "x${shared_dir}" != "x" ]; then
+  docker_run_command="${docker_run_command} --volume=\"${shared_dir}:${mount_point}\""
+fi
+if [ "x${extra_args}" != "x" ]; then
+  docker_run_command="${docker_run_command} ${extra_args}"
+fi
+docker_run_command="${docker_run_command} ${source_image}"
+if [ "x${verbose}" != "x" ]; then
+  echo "Creating container \"${container_name}\": ${docker_run_command}"
+fi
+if [ "x${dry_run}" == "x" ]; then
+  eval "${docker_run_command}"
+fi
+
+
+# vim: set ts=2 sw=2 et:
+
+

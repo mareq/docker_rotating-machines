@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Sets up default configuration of build scripts.
+
+# determine script working directory
+wd="`echo $0 | sed -n '/\//{s/\/[^\/]*$//;p;}'`"
+wd="`(cd "${wd}/..";pwd)`"
+
+# clean enabled scripts
+rm ${wd}/scripts/enabled/* > /dev/null 2> /dev/null
+
+# restore defaults
+cd ${wd}/scripts/enabled
+ln -s -v ../available/devel-cpp.sh 10_devel-cpp.sh
+ln -s -v ../available/environment-vim.sh 20_environment-vim.sh
+ln -s -v ../available/users-default.sh 30_users-default.sh
+ln -s -v ../available/users-custom.sh 40_users-custom.sh
+
+
+# vim: set ts=2 sw=2 et:
+
+
