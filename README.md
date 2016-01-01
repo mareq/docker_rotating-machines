@@ -57,7 +57,7 @@ Should you need root access for any reason, just ```su``` with password ```toor`
 
 ### ```bin```
 
-The ```bin``` directory contains scripts to be executed by user in order to automate various tasks while managing "rotating machines". It may be a good idea to add this directory to ```$PATH``` environment variable, or alternatively copy contents of this directory to location already present in ```$PATH```. All scripts accept command line argument ```--help```, which will print out detailed usage instructions.
+The ```bin``` directory contains scripts to be executed by user in order to automate various tasks while managing "rotating machines". It may be a good idea to add this directory to ```$PATH``` environment variable. All scripts accept command line argument ```--help```, which will print out detailed usage instructions.
 
 - ```drm-build```: The script for building "rotating machine" docker image. This script will use whatever configuration present in ```scripts/enabled```.
 - ```drm-start```: The script will create new docker container using already built image and bind its SSH port to specified port on host machine. It is therefore necessary to build the docker image (e.g. by running ```drm-build```) prior to running this script.
