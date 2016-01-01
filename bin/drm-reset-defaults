@@ -2,6 +2,38 @@
 
 # Sets up default configuration of build scripts.
 
+# auxiliary function to print out usage help
+usage()
+{
+    cat <<EOF
+Restores configuration of custom scripts.
+
+BEWARE: THIS WILL DELETE ALL FILES PRESENT IN scripts/enabled DIRECTORY!
+
+Usage: $0 [options]
+
+Options:
+
+  --help                      print this help
+
+EOF
+}
+
+# parse arguments
+for arg in "$@"; do
+  arg_consumed=
+  if echo $arg | grep "^--help" > /dev/null 2> /dev/null; then
+    usage
+    exit 0
+  fi
+  if [ "x${arg_consumed}" == "x" ]; then
+    echo "Unknown argument: \"${arg}\""
+    echo
+    usage
+    exit 1
+  fi
+done
+
 # determine script working directory
 wd="`echo $0 | sed -n '/\//{s/\/[^\/]*$//;p;}'`"
 wd="`(cd "${wd}/..";pwd)`"
