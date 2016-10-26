@@ -24,9 +24,9 @@ Options: (defaults in [brackets] after descriptions)
                               shared directory will be mounted at
                               [deafult: /mnt]
 
-  --source-image              docker image to be used as template
+  --image-name                docker image to be used as template
                               for container creation
-                              [default: rotating-machine]
+                              [default: rotating_machine]
 
   --extra-args                any extra arguments to be passed to
                               docker run command when creating
@@ -51,7 +51,7 @@ verbose=
 dry_run=
 shared_dir=""
 mount_point="/mnt"
-source_image="rotating-machine"
+image_name="rotating_machine"
 extra_args=""
 
 # parse arguments
@@ -77,8 +77,8 @@ for arg in "$@"; do
     mount_point=`echo $arg | sed "s/^--mount-point=//"`
     arg_consumed=true
   fi
-  if echo $arg | grep "^--source-image" > /dev/null 2> /dev/null; then
-    source_image=`echo $arg | sed "s/^--source-image=//"`
+  if echo $arg | grep "^--image-name" > /dev/null 2> /dev/null; then
+    image_name=`echo $arg | sed "s/^--image-name=//"`
     arg_consumed=true
   fi
   if echo $arg | grep "^--extra-args" > /dev/null 2> /dev/null; then
@@ -101,7 +101,7 @@ fi
 if [ "x${extra_args}" != "x" ]; then
   docker_run_command="${docker_run_command} ${extra_args}"
 fi
-docker_run_command="${docker_run_command} ${source_image}"
+docker_run_command="${docker_run_command} ${image_name}"
 if [ "x${verbose}" != "x" ]; then
   echo "Creating container \"${container_name}\": ${docker_run_command}"
 fi
