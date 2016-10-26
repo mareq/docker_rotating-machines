@@ -17,7 +17,7 @@ Options: (defaults in [brackets] after descriptions)
   --dry-run                   do not execute any docker commands
 
   --image-name                name of docker image to be produced
-                              [default: rotating_machine]
+                              [default: rotating-machine]
 
   --extra-args                any extra arguments to be passed to
                               docker run command when creating
@@ -34,7 +34,7 @@ wd="`(cd "${wd}/..";pwd)`"
 # parameter (default) values
 verbose=
 dry_run=
-image_name="rotating_machine"
+image_name="rotating-machine"
 extra_args=""
 
 # parse arguments

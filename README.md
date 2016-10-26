@@ -20,7 +20,7 @@ Clone the repository.
 
     $ git clone https://github.com/mareq/docker_rotating-machines.git
 
-Run the build script. This can take approximately 10 minutes and will build docker image ```rotating_machine```.
+Run the build script. This can take approximately 10 minutes and will build docker image ```rotating-machine```.
 
     $ docker_rotating-machines/bin/drm-build
 

@@ -26,7 +26,7 @@ Options: (defaults in [brackets] after descriptions)
 
   --source-image              docker image to be used as template
                               for container creation
-                              [default: rotating_machine]
+                              [default: rotating-machine]
 
   --extra-args                any extra arguments to be passed to
                               docker run command when creating
@@ -51,7 +51,7 @@ verbose=
 dry_run=
 shared_dir=""
 mount_point="/mnt"
-source_image="rotating_machine"
+source_image="rotating-machine"
 extra_args=""
 
 # parse arguments
