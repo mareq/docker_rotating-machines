@@ -45,6 +45,7 @@ Should you need root access for any reason, just ```su``` with password ```toor`
       └── scripts
           ├── Dockerfile
           ├── available
+          │   ├── locale-en-gb-utf8.sh
           │   ├── devel-cpp.sh
           │   ├── environment-vim.sh
           │   ├── users-default.sh
