@@ -26,7 +26,11 @@ Options: (defaults in [brackets] after descriptions)
 
   --image-name                docker image to be used as template
                               for container creation
-                              [default: rotating_machine]
+                              [default: rotating-machine]
+
+  --image-tag                 tag of docker image to be used as tempalte
+                              for container creation
+                              [default: latest]
 
   --extra-args                any extra arguments to be passed to
                               docker run command when creating
@@ -51,7 +55,8 @@ verbose=
 dry_run=
 shared_dir=""
 mount_point="/mnt"
-image_name="rotating_machine"
+image_name="rotating-machine"
+image_tag="latest"
 extra_args=""
 
 # parse arguments
@@ -81,6 +86,10 @@ for arg in "$@"; do
     image_name=`echo $arg | sed "s/^--image-name=//"`
     arg_consumed=true
   fi
+  if echo $arg | grep "^--image-tag" > /dev/null 2> /dev/null; then
+    image_tag=`echo $arg | sed "s/^--image-tag=//"`
+    arg_consumed=true
+  fi
   if echo $arg | grep "^--extra-args" > /dev/null 2> /dev/null; then
     extra_args=`echo $ararg | sed "s/^--extra-args=//"`
     arg_consumed=true
@@ -101,7 +110,7 @@ fi
 if [ "x${extra_args}" != "x" ]; then
   docker_run_command="${docker_run_command} ${extra_args}"
 fi
-docker_run_command="${docker_run_command} ${image_name}"
+docker_run_command="${docker_run_command} ${image_name}:${image_tag}"
 if [ "x${verbose}" != "x" ]; then
   echo "Creating container \"${container_name}\": ${docker_run_command}"
 fi

@@ -19,6 +19,9 @@ Options: (defaults in [brackets] after descriptions)
   --image-name                name of docker image to be produced
                               [default: rotating-machine]
 
+  --image-tag                 tag of docker image to be produced
+                              [default: latest]
+
   --extra-args                any extra arguments to be passed to
                               docker run command when creating
                               new container
@@ -35,6 +38,7 @@ wd="`(cd "${wd}/..";pwd)`"
 verbose=
 dry_run=
 image_name="rotating-machine"
+image_tag="latest"
 extra_args=""
 
 # parse arguments
@@ -56,6 +60,10 @@ for arg in "$@"; do
     image_name=`echo $arg | sed "s/^--image-name=//"`
     arg_consumed=true
   fi
+  if echo $arg | grep "^--image-tag" > /dev/null 2> /dev/null; then
+    image_tag=`echo $arg | sed "s/^--image-tag=//"`
+    arg_consumed=true
+  fi
   if echo $arg | grep "^--extra-args" > /dev/null 2> /dev/null; then
     extra_args=`echo $arg | sed "s/^--extra-args=//"`
     arg_consumed=true
@@ -69,12 +77,12 @@ for arg in "$@"; do
 done
 
 # remove the image if it already exists
-if docker images | grep "${image_name}" > /dev/null 2> /dev/null; then
+if docker images | grep "${image_name}:${image_tag}" > /dev/null 2> /dev/null; then
   if [ "x${verbose}" != "x" ]; then
-    echo "Removing image \"${image_name}\""
+    echo "Removing image \"${image_name}:${image_tag}\""
   fi
   if [ "x${dry_run}" == "x" ]; then
-    docker rmi "${image_name}"
+    docker rmi "${image_name}:${image_tag}"
   fi
 fi
 
@@ -116,13 +124,13 @@ fi
 sed --in-place "s|@@scripts@@||" ${tempdir}/Dockerfile
 
 # build image
-docker_build_command="docker build --rm=true --tag=\"${image_name}\""
+docker_build_command="docker build --rm=true --tag=\"${image_name}:${image_tag}\""
 if [ "x${extra_args}" != "x" ]; then
   docker_build_command="${docker_build_command} ${extra_args}"
 fi
 docker_build_command="${docker_build_command} ${tempdir}"
 if [ "x${verbose}" != "x" ]; then
-  echo "Building image \"${image_name}\": ${docker_build_command}"
+  echo "Building image \"${image_name}:${image_tag}\": ${docker_build_command}"
 fi
 if [ "x${dry_run}" == "x" ]; then
   eval "${docker_build_command}"
