@@ -28,12 +28,12 @@ cp -r /root/skel/.vim /root/.
 mv /etc/skel/.bashrc /etc/skel/.bashrc.orig
 cp /root/skel/.bashrc /etc/skel/.
 cp /root/skel/.bash_aliases /etc/skel/.
+cp /root/skel/.tcshrc /etc/skel/.
 cp /root/skel/.inputrc /etc/skel/.
 cp /root/skel/.screenrc /etc/skel/.
 cp /root/skel/.vimrc /etc/skel/.
 cp -r /root/skel/.vim /etc/skel/.
 cp /root/skel/.gitconfig /etc/skel/.
-cp /root/skel/.git_diff_wrapper /etc/skel/.
 
 cat <<EOF >> /etc/motd
 
