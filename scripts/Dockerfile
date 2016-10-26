@@ -21,6 +21,11 @@ RUN sed --in-place=".orig" 's/PermitRootLogin\s\s*\w\w*$/PermitRootLogin yes/' /
 # - https://bugs.launchpad.net/ubuntu/+source/openssh/+bug/45234
 RUN mkdir /var/run/sshd && chmod 0755 /var/run/sshd
 
+# workaround for known bug:
+# - https://github.com/docker/docker/issues/5554
+# - https://github.com/docker/docker/issues/5663
+RUN sed -ri 's/^session\s+required\s+pam_loginuid.so$/session optional pam_loginuid.so/' /etc/pam.d/sshd
+
 @@scripts@@
 
 # run SSH server in container, so that it is possible to SSH into it
