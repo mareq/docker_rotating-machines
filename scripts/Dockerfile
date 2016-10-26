@@ -5,9 +5,6 @@ FROM debian
 RUN sed --in-place=".orig" 's/\(deb\(-src\)\?\s\s*[^\s][^\s]*\s\s*\w\w*\)\s\s*main\s*/\1 main contrib non-free/' /etc/apt/sources.list
 RUN apt-get -q update && apt-get -q --fix-missing -y --force-yes upgrade
 
-# install locales
-RUN apt-get -q --fix-missing -y --force-yes install locales-all
-
 # set up SSH server
 RUN apt-get install --fix-missing -y --force-yes openssh-server
 EXPOSE 22

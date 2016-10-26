@@ -43,10 +43,11 @@ rm ${wd}/scripts/enabled/* > /dev/null 2> /dev/null
 
 # restore defaults
 cd ${wd}/scripts/enabled
-ln -s -v ../available/devel-cpp.sh 10_devel-cpp.sh
-ln -s -v ../available/environment-vim.sh 20_environment-vim.sh
-ln -s -v ../available/users-default.sh 30_users-default.sh
-ln -s -v ../available/users-custom.sh 40_users-custom.sh
+ln -s -v ../available/locale-en-gb-utf8.sh 10_locale-en-gb-utf8.sh
+ln -s -v ../available/devel-cpp.sh 20_devel-cpp.sh
+ln -s -v ../available/environment-vim.sh 30_environment-vim.sh
+ln -s -v ../available/users-default.sh 40_users-default.sh
+ln -s -v ../available/users-custom.sh 50_users-custom.sh
 
 
 # vim: set ts=2 sw=2 et:

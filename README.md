@@ -50,10 +50,11 @@ Should you need root access for any reason, just ```su``` with password ```toor`
           │   ├── users-default.sh
           │   └── users-custom.sh
           └── enabled
-              ├── 10_devel-cpp.sh -> ../available/devel-cpp.sh
-              ├── 20_environment-vim.sh -> ../available/environment-vim.sh
-              ├── 30_users-default.sh -> ../available/users-default.sh
-              └── 40_users-custom.sh -> ../available/users-custom.sh
+              ├── 10_locale-en-gb-utf8.sh -> ../available/locale-en-gb-utf8.sh
+              ├── 20_devel-cpp.sh -> ../available/devel-cpp.sh
+              ├── 30_environment-vim.sh -> ../available/environment-vim.sh
+              ├── 40_users-default.sh -> ../available/users-default.sh
+              └── 50_users-custom.sh -> ../available/users-custom.sh
 
 ### ```bin```
 
@@ -68,6 +69,7 @@ The ```bin``` directory contains scripts to be executed by user in order to auto
 Apart of ```Dockerfile``` that is used by ```drm-build``` script, this directory contains ```available``` and ```enabled``` directories. These work the same way as ```mods-available``` and ```mods-enabled``` directories in configuration of Apache web server. The ```available``` directory contains all custom scripts available and user is free to provide new ones as needed. In order for ```drm-build``` to use a custom script a symlink to that script needs to be placed in ```enabled``` directory. It may matter in which order these scripts get executed during build of docker image and therefore it is guaranteed that they will be executed in alphabetical order (e.g. ```20_environment-vim.sh``` will be executed prior to ```30_users-default.sh``` and therefore home directories of default users will contain rc-files configuring vim-like environment).
 
 Currently, following custom scripts are available:
+- ```locale-en-gb-utf8.sh```: Installs en_GB UTF-8 locale.
 - ```devel-cpp.sh```: Installs packages needed for C++ development.
 - ```environment-vim.sh```: Sets up vim-like environment.
 - ```users-default.sh```: Creates default user named ```moneo``` with password ```oenom``` and disables remote root login.
