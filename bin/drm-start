@@ -72,7 +72,7 @@ for arg in "$@"; do
     exit 0
   fi
   if echo $arg | grep "^--version" > /dev/null 2> /dev/null; then
-    echo "drm-start v0.1.1"
+    echo "drm-start v0.2.0"
     exit 0
   fi
   if echo $arg | grep "^--verbose" > /dev/null 2> /dev/null; then

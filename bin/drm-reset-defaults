@@ -29,7 +29,7 @@ for arg in "$@"; do
     exit 0
   fi
   if echo $arg | grep "^--version" > /dev/null 2> /dev/null; then
-    echo "drm-reset-defaults v0.1.1"
+    echo "drm-reset-defaults v0.2.0"
     exit 0
   fi
   if [ "x${arg_consumed}" == "x" ]; then
