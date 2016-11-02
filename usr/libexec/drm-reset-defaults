@@ -41,8 +41,10 @@ for arg in "$@"; do
 done
 
 # determine script working directory
-wd="`echo $0 | sed -n '/\//{s/\/[^\/]*$//;p;}'`"
-wd="`(cd "${wd}/..";pwd)`"
+if [ "x${wd}" == "x" ]; then
+  wd="`echo $0 | sed -n '/\//{s/\/[^\/]*$//;p;}'`"
+  wd="`(cd "${wd}/../..";pwd)`"
+fi
 
 # clean enabled scripts
 rm ${wd}/scripts/enabled/* > /dev/null 2> /dev/null

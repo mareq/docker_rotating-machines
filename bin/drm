@@ -51,8 +51,13 @@ shift
 # determine script path
 path=`dirname "$0"`
 
+# export script working directory
+wd="`echo $0 | sed -n '/\//{s/\/[^\/]*$//;p;}'`"
+wd="`(cd "${wd}/..";pwd)`"
+export wd
+
 # call specified script
-eval "${path}/drm-${drm_cmd} $@"
+eval "${path}/../usr/libexec/drm-${drm_cmd} $@"
 
 
 # vim: set ts=2 sw=2 et:
