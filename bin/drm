@@ -1,0 +1,60 @@
+#!/bin/bash
+
+# auxiliary function to print out usage help
+usage()
+{
+    cat <<EOF
+Docker "rotating machines" manager.
+
+Usage: $0 [<command>] [options]
+
+Commands:
+
+  buid                        create new Docker image for
+                              "rotating machine"
+
+  start                       create new Docker container
+
+  reset-defaults              restore configuration of custom scripts
+
+Options: (the following options apply if there is no command specified)
+
+  --help                      print this help
+
+  --version                   print version
+
+  Each command accepts its own specific options. See command-specific
+  help for more information.
+EOF
+}
+
+# at least one parameter is required
+if [ $# -lt 1 ]; then
+  usage
+  exit 1
+fi
+
+# parameter (default) values
+drm_cmd=
+
+if echo $1 | grep "^--help" > /dev/null 2> /dev/null; then
+  usage
+  exit 0
+fi
+if echo $1 | grep "^--version" > /dev/null 2> /dev/null; then
+  echo "drm v0.2.0"
+  exit 0
+fi
+drm_cmd=$1
+shift
+
+# determine script path
+path=`dirname "$0"`
+
+# call specified script
+eval "${path}/drm-${drm_cmd} $@"
+
+
+# vim: set ts=2 sw=2 et:
+
+
