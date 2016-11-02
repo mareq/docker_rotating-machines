@@ -12,6 +12,8 @@ Options: (defaults in [brackets] after descriptions)
 
   --help                      print this help
 
+  --version                   print version
+
   --verbose                   produce verbose output
 
   --dry-run                   do not execute any docker commands
@@ -46,6 +48,10 @@ for arg in "$@"; do
   arg_consumed=
   if echo $arg | grep "^--help" > /dev/null 2> /dev/null; then
     usage
+    exit 0
+  fi
+  if echo $arg | grep "^--version" > /dev/null 2> /dev/null; then
+    echo "drm-build v0.1.1"
     exit 0
   fi
   if echo $arg | grep "^--verbose" > /dev/null 2> /dev/null; then
