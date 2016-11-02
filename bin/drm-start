@@ -42,17 +42,20 @@ Options: (defaults in [brackets] after descriptions)
 EOF
 }
 
-# check presence of <container-name> argument
-if [ $# -lt 2 ]; then
-  usage
-  exit 1
+# <container-name> and <ssh-port> parameters
+container_name=""
+ssh_port=""
+help_only=
+if [ $# -ge 2 ]; then
+  container_name="$1"
+  shift
+  ssh_port="$1"
+  shift
+else
+  help_only=true
 fi
 
 # parameter (default) values
-container_name="$1"
-shift
-ssh_port="$1"
-shift
 verbose=
 dry_run=
 shared_dir=""
@@ -107,6 +110,13 @@ for arg in "$@"; do
     exit 1
   fi
 done
+
+# check arguments (<container-name> and <ssh-port> are required
+# for anything more than help messages)
+if [ "x${help_only}" != "x" ]; then
+  usage
+  exit 1
+fi
 
 # create container
 docker_run_command="docker run --detach --name=\"${container_name}\" --publish=${ssh_port}:22"
