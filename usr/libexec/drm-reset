@@ -79,11 +79,11 @@ if [ "x${drm_dry_run}" == "x" ]; then
 fi
 
 # restore defaults
-drm_ln_10_command="ln -s -v ../available/locale-en-gb-utf8.sh 10_locale-en-gb-utf8.sh"
-drm_ln_20_command="ln -s -v ../available/devel-cpp.sh 20_devel-cpp.sh"
-drm_ln_30_command="ln -s -v ../available/environment-vim.sh 30_environment-vim.sh"
-drm_ln_40_command="ln -s -v ../available/users-default.sh 40_users-default.sh"
-drm_ln_50_command="ln -s -v ../available/users-custom.sh 50_users-custom.sh"
+drm_ln_10_command="ln -s -v ${drm_path_data}/scripts/available/locale-en-gb-utf8.sh 10_locale-en-gb-utf8.sh"
+drm_ln_20_command="ln -s -v ${drm_path_data}/scripts/available/devel-cpp.sh 20_devel-cpp.sh"
+drm_ln_30_command="ln -s -v ${drm_path_data}/scripts/available/environment-vim.sh 30_environment-vim.sh"
+drm_ln_40_command="ln -s -v ${drm_path_data}/scripts/available/users-default.sh 40_users-default.sh"
+drm_ln_50_command="ln -s -v ${drm_path_data}/scripts/available/users-custom.sh 50_users-custom.sh"
 drm_ln_redirect=""
 if [ "x${drm_verbose}" != "x" ]; then
   echo "${drm_program_name}: Enabling script: ${drm_ln_10_command}"
@@ -94,6 +94,7 @@ if [ "x${drm_verbose}" != "x" ]; then
   drm_ln_redirect="> /dev/null 2> /dev/null"
 fi
 if [ "x${drm_dry_run}" == "x" ]; then
+  mkdir -p ${drm_wd}/scripts/enabled
   cd ${drm_wd}/scripts/enabled
   eval "${drm_ln_10_command} ${drm_ln_redirect}"
   eval "${drm_ln_20_command} ${drm_ln_redirect}"

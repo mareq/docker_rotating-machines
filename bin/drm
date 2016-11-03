@@ -130,6 +130,26 @@ fi
 drm_path_libexec="`(cd "${drm_path_libexec}";pwd)`"
 export drm_path_libexec
 
+# datadir: /usr/local/share/
+if [ -z "${drm_path_data}" ]; then
+  drm_path_data_options=(
+    "$(dirname $(dirname $(which ${0})))/usr/share/"
+    "${HOME}/.${drm_program_name}/usr/share/"
+    "/usr/local/share/${drm_program_name}/"
+    "/usr/share/${drm_program_name}/"
+  )
+  drm_path_data=`search_for_path drm_path_data_options`
+fi
+if [ -z "${drm_path_data}" ]; then
+  echo "${drm_program_name}: FATAL: Unable to find data directory"
+  exit 1
+fi
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "${drm_program_name}: Directory path: data: ${drm_path_data}"
+fi
+drm_path_data="`(cd "${drm_path_data}";pwd)`"
+export drm_path_data
+
 # export script working directory
 drm_wd="`echo ${0} | sed -n '/\//{s/\/[^\/]*$//;p;}'`"
 drm_wd="`(cd "${drm_wd}/..";pwd)`"
