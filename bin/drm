@@ -1,53 +1,87 @@
 #!/bin/bash
 
+# constants
+export drm_program_name="${0##*/}"
+export drm_program_version="v0.2.0"
+
 # auxiliary function to print out usage help
 function drm_usage()
 {
     cat <<EOF
 Docker "rotating machines" manager.
 
-Usage: ${0} [<command>] [options]
+Usage: ${drm_program_name} <command> [options]
+   or: ${drm_program_name} --help
+   or: ${drm_program_name} --version
 
-Commands:
+Commands: (defaults in [brackets] after descriptions)
+
+  help [<command>]            display help for specified command
+                              [display this general help]
 
   buid                        create new Docker image for
                               "rotating machine"
 
   start                       create new Docker container
 
-  reset-defaults              restore configuration of custom scripts
+  reset                       restore configuration of custom scripts
 
-Options: (the following options apply if there is no command specified)
+Options:
 
-  --help                      print this help
+  -h, --help                  print this help
 
-  --version                   print version
+  -v, --version               print version
 
   Each command accepts its own specific options. See command-specific
   help for more information.
 EOF
 }
 
-# at least one parameter is required
+# parameter (default) values
+drm_command=
+drm_options=()
+
+# at least one argument is required
 if [ ${#} -lt 1 ]; then
+  echo "${drm_program_name}: Command must be specified"
+  echo
   drm_usage
   exit 1
 fi
 
-# parameter (default) values
-drm_command=
-
 # parse arguments
-if echo ${1} | grep "^--help" > /dev/null 2> /dev/null; then
-  drm_usage
-  exit 0
+if echo ${1} | grep "^[a-zA-Z][a-zA-Z]*"$ > /dev/null 2> /dev/null; then
+  drm_command="${1}"
+  shift
+  if [ "${drm_command}" == "help" ]; then
+    if echo ${1} | grep "^[a-zA-Z][a-zA-Z]*"$ > /dev/null 2> /dev/null; then
+      drm_options=("--help")
+      drm_command="${1}"
+      shift
+    else
+      drm_usage
+      exit 0
+    fi
+  fi
 fi
-if echo ${1} | grep "^--version" > /dev/null 2> /dev/null; then
-  echo "drm v0.2.0"
-  exit 0
-fi
-drm_command=${1}
-shift
+for drm_arg in "${@}"; do
+  case ${drm_arg} in
+    -h | --help)
+      drm_usage
+      exit 0
+      ;;
+    -v | --version)
+      echo "${drm_program_name} ${drm_program_version}"
+      exit 0
+      ;;
+    *)
+      if [ ${#drm_options} -gt 0 ]; then
+        drm_arg=" ${drm_arg}"
+      fi
+      drm_options+="${drm_arg}"
+      ;;
+  esac
+done
 
 # determine script path
 drm_path=`dirname "${0}"`
@@ -58,7 +92,7 @@ drm_wd="`(cd "${drm_wd}/..";pwd)`"
 export drm_wd
 
 # call specified script
-eval "${drm_path}/../usr/libexec/drm-${drm_command} ${@}"
+eval "${drm_path}/../usr/libexec/drm-${drm_command} ${drm_options}"
 
 
 # vim: set ts=2 sw=2 et:

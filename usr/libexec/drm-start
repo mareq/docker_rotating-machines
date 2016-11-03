@@ -1,40 +1,39 @@
 #!/bin/bash
 
+# constants
+drm_program_name="${drm_program_name} ${0##*/drm-}"
+
 # auxiliary function to print out usage help
 function drm_usage()
 {
     cat <<EOF
 Creates new Docker container with given <container-name> accessible via SSH on local <ssh-port>.
 
-Usage: ${0} <container-name> <ssh-port> [options]
+Usage: ${drm_program_name} <container-name> <ssh-port> [options]
 
 Options: (defaults in [brackets] after descriptions)
 
-  --help                      print this help
-
-  --version                   print version
-
   --verbose                   produce verbose output
 
-  --dry-run                   do not execute any docker commands
+  -n, --dry-run               do not execute any docker commands
 
-  --shared-dir                path to the host machine's directory
+  -s, --shared-dir=<dir>      path to the host machine's directory
                               to be shared with container
                               [deafult: <none>]
 
-  --mount-point               mount point on container's filesystem
+  -m, --mount-point=<dir>     mount point on container's filesystem
                               shared directory will be mounted at
                               [deafult: /mnt]
 
-  --image-name                docker image to be used as template
+  -i, --image-name=<image>    docker image to be used as template
                               for container creation
                               [default: rotating-machine]
 
-  --image-tag                 tag of docker image to be used as tempalte
+  -t, --image-tag=<tag>       tag of docker image to be used as tempalte
                               for container creation
                               [default: latest]
 
-  --extra-args                any extra arguments to be passed to
+  -x, --extra-args=<args>     any extra arguments to be passed to
                               docker run command when creating
                               new container
                               [default: <none>]
@@ -42,20 +41,11 @@ Options: (defaults in [brackets] after descriptions)
 EOF
 }
 
-# <container-name> and <ssh-port> parameters
-drm_container_name=""
-drm_ssh_port=""
-drm_help_only=
-if [ ${#} -ge 2 ]; then
-  drm_container_name="${1}"
-  shift
-  drm_ssh_port="${1}"
-  shift
-else
-  drm_help_only=true
-fi
-
 # parameter (default) values
+drm_container_name=""
+drm_container_name_regex="[a-zA-Z0-9_][a-zA-Z0-9_-]*"
+drm_ssh_port=""
+drm_ssh_port_regex="[0-9][0-9]*"
 drm_verbose=
 drm_dry_run=
 drm_shared_dir=""
@@ -65,56 +55,111 @@ drm_image_tag="latest"
 drm_extra_args=""
 
 # parse arguments
-for drm_arg in "${@}"; do
-  drm_arg_consumed=
-  if echo ${drm_arg} | grep "^--help" > /dev/null 2> /dev/null; then
-    drm_usage
-    exit 0
-  fi
-  if echo ${drm_arg} | grep "^--version" > /dev/null 2> /dev/null; then
-    echo "drm-start v0.2.0"
-    exit 0
-  fi
-  if echo ${drm_arg} | grep "^--verbose" > /dev/null 2> /dev/null; then
-    drm_verbose=true
-    drm_arg_consumed=true
-  fi
-  if echo ${drm_arg} | grep "^--dry-run" > /dev/null 2> /dev/null; then
-    drm_dry_run=true
-    drm_arg_consumed=true
-  fi
-  if echo ${drm_arg} | grep "^--shared-dir" > /dev/null 2> /dev/null; then
-    drm_shared_dir=`echo ${drm_arg} | sed "s/^--shared-dir=//"`
-    drm_arg_consumed=true
-  fi
-  if echo ${drm_arg} | grep "^--mount-point" > /dev/null 2> /dev/null; then
-    drm_mount_point=`echo ${drm_arg} | sed "s/^--mount-point=//"`
-    drm_arg_consumed=true
-  fi
-  if echo ${drm_arg} | grep "^--image-name" > /dev/null 2> /dev/null; then
-    drm_image_name=`echo ${drm_arg} | sed "s/^--image-name=//"`
-    drm_arg_consumed=true
-  fi
-  if echo ${drm_arg} | grep "^--image-tag" > /dev/null 2> /dev/null; then
-    drm_image_tag=`echo ${drm_arg} | sed "s/^--image-tag=//"`
-    drm_arg_consumed=true
-  fi
-  if echo ${drm_arg} | grep "^--extra-args" > /dev/null 2> /dev/null; then
-    drm_extra_args=`echo ${drm_arg} | sed "s/^--extra-args=//"`
-    drm_arg_consumed=true
-  fi
-  if [ "x${drm_arg_consumed}" == "x" ]; then
-    echo "Unknown argument: \"${drm_arg}\""
-    echo
-    drm_usage
-    exit 1
-  fi
+drm_options_short="hns:m:i:t:x:"
+drm_options_long="help,verbose,dry-run,shared-dir:,mount-point:,image-name:,image-tag,extra-args:"
+drm_options=`getopt -o "${drm_options_short}" -l "${drm_options_long}" -n "${drm_program_name}" -- "${@}"`
+drm_options_err=${?}
+eval set -- $drm_options
+while true; do
+  case "${1}" in
+    -h | --help)
+      drm_usage
+      exit 0
+      ;;
+    --verbose)
+      drm_verbose=true
+      shift
+      ;;
+    -n | --dry-run)
+      drm_dry_run=true
+      shift 1
+      ;;
+    -s | --shared-dir)
+      drm_shared_dir=${2}
+      shift 2
+      ;;
+    --shared-dir=*)
+      drm_shared_dir=`echo ${drm_arg} | sed "s/^--shared-dir=//"`
+      shift 1
+      ;;
+    -m | --mount-point)
+      drm_mount_point=${2}
+      shift 2
+      ;;
+    --mount-point=*)
+      drm_mount_point=`echo ${drm_arg} | sed "s/^--mount-point=//"`
+      shift 1
+      ;;
+    -i | --image-name)
+      drm_image_name=${2}
+      shift 2
+      ;;
+    --image-name=*)
+      drm_image_name=`echo ${drm_arg} | sed "s/^--image-name=//"`
+      shift 1
+      ;;
+    -t | --image-tag)
+      drm_image_name=${2}
+      shift 2
+      ;;
+    --image-tag=*)
+      drm_image_tag=`echo ${drm_arg} | sed "s/^--image-tag=//"`
+      shift 1
+      ;;
+    -x | --extra-args)
+      drm_extra_args=${2}
+      shift 2
+      ;;
+    --extra-args=*)
+      drm_extra_args=`echo ${drm_arg} | sed "s/^--extra-args=//"`
+      shift 1
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      echo
+      drm_usage
+      exit 1
+      ;;
+  esac
 done
-
-# check arguments (<container-name> and <ssh-port> are required
-# for anything more than help messages)
-if [ "x${drm_help_only}" != "x" ]; then
+if [ ${drm_options_err} -ne 0 ]; then
+  echo
   drm_usage
+  exit 1
+fi
+
+# container name
+if [ ${#} -lt 1 ]; then
+  echo "${drm_program_name}: Container name must be specified"
+  echo
+  drm_usage
+  exit 1
+fi
+if echo ${1} | grep "^${drm_container_name_regex}"$ > /dev/null 2> /dev/null; then
+  drm_container_name="${1}"
+  shift
+else
+  echo "${drm_program_name}: Invalid container name: \"${1}\""
+  echo "${drm_program_name}: Container name must match the regular expression: \"${drm_container_name_regex}\""
+  exit 1
+fi
+
+# ssh port
+if [ ${#} -lt 1 ]; then
+  echo "${drm_program_name}: SSH port must be specified"
+  echo
+  drm_usage
+  exit 1
+fi
+if echo ${1} | grep "^${drm_ssh_port_regex}"$ > /dev/null 2> /dev/null; then
+  drm_ssh_port="${1}"
+  shift
+else
+  echo "${drm_program_name}: Invalid SSH port: \"${1}\""
+  echo "${drm_program_name}: SSH port must match the regular expression: \"${drm_ssh_port_regex}\""
   exit 1
 fi
 
@@ -128,7 +173,7 @@ if [ "x${drm_extra_args}" != "x" ]; then
 fi
 drm_docker_run_command="${drm_docker_run_command} ${drm_image_name}:${drm_image_tag}"
 if [ "x${drm_verbose}" != "x" ]; then
-  echo "Creating container \"${drm_container_name}\": ${drm_docker_run_command}"
+  echo "${drm_program_name}: Creating container \"${drm_container_name}\": ${drm_docker_run_command}"
 fi
 if [ "x${drm_dry_run}" == "x" ]; then
   eval "${drm_docker_run_command}"

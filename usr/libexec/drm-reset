@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# Sets up default configuration of build scripts.
+# constants
+drm_program_name="${drm_program_name} ${0##*/drm-}"
 
 # auxiliary function to print out usage help
 function drm_usage()
@@ -10,35 +11,39 @@ Restores configuration of custom scripts.
 
 BEWARE: THIS WILL DELETE ALL FILES PRESENT IN scripts/enabled DIRECTORY!
 
-Usage: ${0} [options]
-
-Options:
-
-  --help                      print this help
-
-  --version                   print version
+Usage: ${drm_program_name}
 
 EOF
 }
 
 # parse arguments
-for drm_arg in "${@}"; do
-  drm_arg_consumed=
-  if echo ${drm_arg} | grep "^--help" > /dev/null 2> /dev/null; then
-    drm_usage
-    exit 0
-  fi
-  if echo ${drm_arg} | grep "^--version" > /dev/null 2> /dev/null; then
-    echo "drm-reset-defaults v0.2.0"
-    exit 0
-  fi
-  if [ "x${drm_arg_consumed}" == "x" ]; then
-    echo "Unknown argument: \"${drm_arg}\""
-    echo
-    drm_usage
-    exit 1
-  fi
+drm_options_short="h"
+drm_options_long="help"
+drm_options=`getopt -o "${drm_options_short}" -l "${drm_options_long}" -n "${drm_program_name}" -- "${@}"`
+drm_options_err=${?}
+eval set -- $drm_options
+while true; do
+  case "${1}" in
+    -h | --help)
+      drm_usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      echo
+      drm_usage
+      exit 1
+      ;;
+  esac
 done
+if [ ${drm_options_err} -ne 0 ]; then
+  echo
+  drm_usage
+  exit 1
+fi
 
 # determine script working directory
 if [ "x${drm_wd}" == "x" ]; then

@@ -1,30 +1,29 @@
 #!/bin/bash
 
+# constants
+drm_program_name="${drm_program_name} ${0##*/drm-}"
+
 # auxiliary function to print out usage help
 function drm_usage()
 {
     cat <<EOF
 Creates new Docker image for "rotating machine".
 
-Usage: ${0} [options]
+Usage: ${drm_program_name} [options]
 
 Options: (defaults in [brackets] after descriptions)
 
-  --help                      print this help
-
-  --version                   print version
-
   --verbose                   produce verbose output
 
-  --dry-run                   do not execute any docker commands
+  -n, --dry-run               do not execute any docker commands
 
-  --image-name                name of docker image to be produced
+  -i, --image-name=<image>    name of docker image to be produced
                               [default: rotating-machine]
 
-  --image-tag                 tag of docker image to be produced
+  -t, --image-tag=<tag>       tag of docker image to be produced
                               [default: latest]
 
-  --extra-args                any extra arguments to be passed to
+  -x, --extra-args=<args>     any extra arguments to be passed to
                               docker run command when creating
                               new container
                               [default: <none>]
@@ -46,43 +45,65 @@ drm_image_tag="latest"
 drm_extra_args=""
 
 # parse arguments
-for drm_arg in "${@}"; do
-  drm_arg_consumed=
-  if echo ${drm_arg} | grep "^--help" > /dev/null 2> /dev/null; then
-    drm_usage
-    exit 0
-  fi
-  if echo ${drm_arg} | grep "^--version" > /dev/null 2> /dev/null; then
-    echo "drm-build v0.2.0"
-    exit 0
-  fi
-  if echo ${drm_arg} | grep "^--verbose" > /dev/null 2> /dev/null; then
-    drm_verbose=true
-    drm_arg_consumed=true
-  fi
-  if echo ${drm_arg} | grep "^--dry-run" > /dev/null 2> /dev/null; then
-    drm_dry_run=true
-    drm_arg_consumed=true
-  fi
-  if echo ${drm_arg} | grep "^--image-name" > /dev/null 2> /dev/null; then
-    drm_image_name=`echo ${drm_arg} | sed "s/^--image-name=//"`
-    drm_arg_consumed=true
-  fi
-  if echo ${drm_arg} | grep "^--image-tag" > /dev/null 2> /dev/null; then
-    drm_image_tag=`echo ${drm_arg} | sed "s/^--image-tag=//"`
-    drm_arg_consumed=true
-  fi
-  if echo ${drm_arg} | grep "^--extra-args" > /dev/null 2> /dev/null; then
-    drm_extra_args=`echo ${drm_arg} | sed "s/^--extra-args=//"`
-    drm_arg_consumed=true
-  fi
-  if [ "x${drm_arg_consumed}" == "x" ]; then
-    echo "Unknown argument: \"${drm_arg}\""
-    echo
-    drm_usage
-    exit 1
-  fi
+drm_options_short="hni:t:x:"
+drm_options_long="help,verbose,dry-run,image-name:,image-tag:,extra-args:"
+drm_options=`getopt -o "${drm_options_short}" -l "${drm_options_long}" -n "${drm_program_name}" -- "${@}"`
+drm_options_err=${?}
+eval set -- $drm_options
+while true; do
+  case "${1}" in
+    -h | --help)
+      drm_usage
+      exit 0
+      ;;
+    --verbose)
+      drm_verbose=true
+      shift
+      ;;
+    -n | --dry-run)
+      drm_dry_run=true
+      shift 1
+      ;;
+    -i | --image-name)
+      drm_image_name=${2}
+      shift 2
+      ;;
+    --image-name=*)
+      drm_image_name=`echo ${drm_arg} | sed "s/^--image-name=//"`
+      shift 1
+      ;;
+    -t | --image-tag)
+      drm_image_name=${2}
+      shift 2
+      ;;
+    --image-tag=*)
+      drm_image_tag=`echo ${drm_arg} | sed "s/^--image-tag=//"`
+      shift 1
+      ;;
+    -x | --extra-args)
+      drm_extra_args=${2}
+      shift 2
+      ;;
+    --extra-args=*)
+      drm_extra_args=`echo ${drm_arg} | sed "s/^--extra-args=//"`
+      shift 1
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      echo
+      drm_usage
+      exit 1
+      ;;
+  esac
 done
+if [ ${drm_options_err} -ne 0 ]; then
+  echo
+  drm_usage
+  exit 1
+fi
 
 # remove the image if it already exists
 if docker images | grep "${drm_image_name}:${drm_image_tag}" > /dev/null 2> /dev/null; then
