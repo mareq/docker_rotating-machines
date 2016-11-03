@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # auxiliary function to print out usage help
-usage()
+function drm_usage()
 {
     cat <<EOF
 Docker "rotating machines" manager.
 
-Usage: $0 [<command>] [options]
+Usage: ${0} [<command>] [options]
 
 Commands:
 
@@ -29,35 +29,36 @@ EOF
 }
 
 # at least one parameter is required
-if [ $# -lt 1 ]; then
-  usage
+if [ ${#} -lt 1 ]; then
+  drm_usage
   exit 1
 fi
 
 # parameter (default) values
-drm_cmd=
+drm_command=
 
-if echo $1 | grep "^--help" > /dev/null 2> /dev/null; then
-  usage
+# parse arguments
+if echo ${1} | grep "^--help" > /dev/null 2> /dev/null; then
+  drm_usage
   exit 0
 fi
-if echo $1 | grep "^--version" > /dev/null 2> /dev/null; then
+if echo ${1} | grep "^--version" > /dev/null 2> /dev/null; then
   echo "drm v0.2.0"
   exit 0
 fi
-drm_cmd=$1
+drm_command=${1}
 shift
 
 # determine script path
-path=`dirname "$0"`
+drm_path=`dirname "${0}"`
 
 # export script working directory
-wd="`echo $0 | sed -n '/\//{s/\/[^\/]*$//;p;}'`"
-wd="`(cd "${wd}/..";pwd)`"
-export wd
+drm_wd="`echo ${0} | sed -n '/\//{s/\/[^\/]*$//;p;}'`"
+drm_wd="`(cd "${drm_wd}/..";pwd)`"
+export drm_wd
 
 # call specified script
-eval "${path}/../usr/libexec/drm-${drm_cmd} $@"
+eval "${drm_path}/../usr/libexec/drm-${drm_command} ${@}"
 
 
 # vim: set ts=2 sw=2 et:

@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # auxiliary function to print out usage help
-usage()
+function drm_usage()
 {
     cat <<EOF
 Creates new Docker image for "rotating machine".
 
-Usage: $0 [options]
+Usage: ${0} [options]
 
 Options: (defaults in [brackets] after descriptions)
 
@@ -33,77 +33,77 @@ EOF
 }
 
 # determine script working directory
-if [ "x${wd}" == "x" ]; then
-  wd="`echo $0 | sed -n '/\//{s/\/[^\/]*$//;p;}'`"
-  wd="`(cd "${wd}/../..";pwd)`"
+if [ "x${drm_wd}" == "x" ]; then
+  drm_wd="`echo ${0} | sed -n '/\//{s/\/[^\/]*$//;p;}'`"
+  drm_wd="`(cd "${drm_wd}/../..";pwd)`"
 fi
 
 # parameter (default) values
-verbose=
-dry_run=
-image_name="rotating-machine"
-image_tag="latest"
-extra_args=""
+drm_verbose=
+drm_dry_run=
+drm_image_name="rotating-machine"
+drm_image_tag="latest"
+drm_extra_args=""
 
 # parse arguments
-for arg in "$@"; do
-  arg_consumed=
-  if echo $arg | grep "^--help" > /dev/null 2> /dev/null; then
-    usage
+for drm_arg in "${@}"; do
+  drm_arg_consumed=
+  if echo ${drm_arg} | grep "^--help" > /dev/null 2> /dev/null; then
+    drm_usage
     exit 0
   fi
-  if echo $arg | grep "^--version" > /dev/null 2> /dev/null; then
+  if echo ${drm_arg} | grep "^--version" > /dev/null 2> /dev/null; then
     echo "drm-build v0.2.0"
     exit 0
   fi
-  if echo $arg | grep "^--verbose" > /dev/null 2> /dev/null; then
-    verbose=true
-    arg_consumed=true
+  if echo ${drm_arg} | grep "^--verbose" > /dev/null 2> /dev/null; then
+    drm_verbose=true
+    drm_arg_consumed=true
   fi
-  if echo $arg | grep "^--dry-run" > /dev/null 2> /dev/null; then
-    dry_run=true
-    arg_consumed=true
+  if echo ${drm_arg} | grep "^--dry-run" > /dev/null 2> /dev/null; then
+    drm_dry_run=true
+    drm_arg_consumed=true
   fi
-  if echo $arg | grep "^--image-name" > /dev/null 2> /dev/null; then
-    image_name=`echo $arg | sed "s/^--image-name=//"`
-    arg_consumed=true
+  if echo ${drm_arg} | grep "^--image-name" > /dev/null 2> /dev/null; then
+    drm_image_name=`echo ${drm_arg} | sed "s/^--image-name=//"`
+    drm_arg_consumed=true
   fi
-  if echo $arg | grep "^--image-tag" > /dev/null 2> /dev/null; then
-    image_tag=`echo $arg | sed "s/^--image-tag=//"`
-    arg_consumed=true
+  if echo ${drm_arg} | grep "^--image-tag" > /dev/null 2> /dev/null; then
+    drm_image_tag=`echo ${drm_arg} | sed "s/^--image-tag=//"`
+    drm_arg_consumed=true
   fi
-  if echo $arg | grep "^--extra-args" > /dev/null 2> /dev/null; then
-    extra_args=`echo $arg | sed "s/^--extra-args=//"`
-    arg_consumed=true
+  if echo ${drm_arg} | grep "^--extra-args" > /dev/null 2> /dev/null; then
+    drm_extra_args=`echo ${drm_arg} | sed "s/^--extra-args=//"`
+    drm_arg_consumed=true
   fi
-  if [ "x${arg_consumed}" == "x" ]; then
-    echo "Unknown argument: \"${arg}\""
+  if [ "x${drm_arg_consumed}" == "x" ]; then
+    echo "Unknown argument: \"${drm_arg}\""
     echo
-    usage
+    drm_usage
     exit 1
   fi
 done
 
 # remove the image if it already exists
-if docker images | grep "${image_name}:${image_tag}" > /dev/null 2> /dev/null; then
-  if [ "x${verbose}" != "x" ]; then
-    echo "Removing image \"${image_name}:${image_tag}\""
+if docker images | grep "${drm_image_name}:${drm_image_tag}" > /dev/null 2> /dev/null; then
+  if [ "x${drm_verbose}" != "x" ]; then
+    echo "Removing image \"${drm_image_name}:${drm_image_tag}\""
   fi
-  if [ "x${dry_run}" == "x" ]; then
-    docker rmi "${image_name}:${image_tag}"
+  if [ "x${drm_dry_run}" == "x" ]; then
+    docker rmi "${drm_image_name}:${drm_image_tag}"
   fi
 fi
 
 # create docker build directory with Dockerfile
-tempdir=`mktemp -d`
-if [ "x${verbose}" != "x" ]; then
-  echo "Docker build directory: ${tempdir}"
+drm_tempdir=`mktemp -d`
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "Docker build directory: ${drm_tempdir}"
 fi
-cp ${wd}/scripts/Dockerfile ${tempdir}/.
+cp ${drm_wd}/scripts/Dockerfile ${drm_tempdir}/.
 
 # add all enabled scripts
-scripts=( `find ${wd}/scripts/enabled/. -maxdepth 1 -not -type d -printf '%f\n' | sort` )
-if [ ${#scripts[@]} -ne 0 ]; then
+drm_scripts=( `find ${drm_wd}/scripts/enabled/. -maxdepth 1 -not -type d -printf '%f\n' | sort` )
+if [ ${#drm_scripts[@]} -ne 0 ]; then
   # script directory need to be created in container
   command="`cat <<EOF
 # run additional build scripts
@@ -111,41 +111,41 @@ RUN mkdir /root/docker-scripts/
 @@scripts@@
 EOF
 `"
-  sed --in-place "s|@@scripts@@|`echo "${command}" | sed '{:q;N;s/\n/\\\\n/g;t q}'`|" ${tempdir}/Dockerfile
+  sed --in-place "s|@@scripts@@|`echo "${command}" | sed '{:q;N;s/\n/\\\\n/g;t q}'`|" ${drm_tempdir}/Dockerfile
 
   # all enabled scripts need to be added to container and executed during build
-  for script in "${scripts[@]}"; do
+  for drm_script in "${drm_scripts[@]}"; do
     command="`cat <<EOF
-ADD ./${script} /root/docker-scripts/
-RUN /root/docker-scripts/${script}
+ADD ./${drm_script} /root/docker-scripts/
+RUN /root/docker-scripts/${drm_script}
 @@scripts@@
 EOF
 `"
-    sed --in-place "s|@@scripts@@|`echo "${command}" | sed '{:q;N;s/\n/\\\\n/g;t q}'`|" ${tempdir}/Dockerfile
-    cp ${wd}/scripts/enabled/${script} ${tempdir}/.
-    if [ "x${verbose}" != "x" ]; then
-      echo "Added script: ${script}"
+    sed --in-place "s|@@scripts@@|`echo "${command}" | sed '{:q;N;s/\n/\\\\n/g;t q}'`|" ${drm_tempdir}/Dockerfile
+    cp ${drm_wd}/scripts/enabled/${drm_script} ${drm_tempdir}/.
+    if [ "x${drm_verbose}" != "x" ]; then
+      echo "Added script: ${drm_script}"
     fi
   done
 fi
 # remove @@scripts@@ wildcard in Dockerfile
-sed --in-place "s|@@scripts@@||" ${tempdir}/Dockerfile
+sed --in-place "s|@@scripts@@||" ${drm_tempdir}/Dockerfile
 
 # build image
-docker_build_command="docker build --rm=true --tag=\"${image_name}:${image_tag}\""
-if [ "x${extra_args}" != "x" ]; then
-  docker_build_command="${docker_build_command} ${extra_args}"
+docker_build_command="docker build --rm=true --tag=\"${drm_image_name}:${drm_image_tag}\""
+if [ "x${drm_extra_args}" != "x" ]; then
+  docker_build_command="${docker_build_command} ${drm_extra_args}"
 fi
-docker_build_command="${docker_build_command} ${tempdir}"
-if [ "x${verbose}" != "x" ]; then
-  echo "Building image \"${image_name}:${image_tag}\": ${docker_build_command}"
+docker_build_command="${docker_build_command} ${drm_tempdir}"
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "Building image \"${drm_image_name}:${drm_image_tag}\": ${docker_build_command}"
 fi
-if [ "x${dry_run}" == "x" ]; then
+if [ "x${drm_dry_run}" == "x" ]; then
   eval "${docker_build_command}"
 fi
 
 # clean up
-rm -rf ${tempdir}
+rm -rf ${drm_tempdir}
 
 
 # vim: set ts=2 sw=2 et:

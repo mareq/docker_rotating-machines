@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # auxiliary function to print out usage help
-usage()
+function drm_usage()
 {
     cat <<EOF
 Creates new Docker container with given <container-name> accessible via SSH on local <ssh-port>.
 
-Usage: $0 <container-name> <ssh-port> [options]
+Usage: ${0} <container-name> <ssh-port> [options]
 
 Options: (defaults in [brackets] after descriptions)
 
@@ -43,95 +43,95 @@ EOF
 }
 
 # <container-name> and <ssh-port> parameters
-container_name=""
-ssh_port=""
-help_only=
-if [ $# -ge 2 ]; then
-  container_name="$1"
+drm_container_name=""
+drm_ssh_port=""
+drm_help_only=
+if [ ${#} -ge 2 ]; then
+  drm_container_name="${1}"
   shift
-  ssh_port="$1"
+  drm_ssh_port="${1}"
   shift
 else
-  help_only=true
+  drm_help_only=true
 fi
 
 # parameter (default) values
-verbose=
-dry_run=
-shared_dir=""
-mount_point="/mnt"
-image_name="rotating-machine"
-image_tag="latest"
-extra_args=""
+drm_verbose=
+drm_dry_run=
+drm_shared_dir=""
+drm_mount_point="/mnt"
+drm_image_name="rotating-machine"
+drm_image_tag="latest"
+drm_extra_args=""
 
 # parse arguments
-for arg in "$@"; do
-  arg_consumed=
-  if echo $arg | grep "^--help" > /dev/null 2> /dev/null; then
-    usage
+for drm_arg in "${@}"; do
+  drm_arg_consumed=
+  if echo ${drm_arg} | grep "^--help" > /dev/null 2> /dev/null; then
+    drm_usage
     exit 0
   fi
-  if echo $arg | grep "^--version" > /dev/null 2> /dev/null; then
+  if echo ${drm_arg} | grep "^--version" > /dev/null 2> /dev/null; then
     echo "drm-start v0.2.0"
     exit 0
   fi
-  if echo $arg | grep "^--verbose" > /dev/null 2> /dev/null; then
-    verbose=true
-    arg_consumed=true
+  if echo ${drm_arg} | grep "^--verbose" > /dev/null 2> /dev/null; then
+    drm_verbose=true
+    drm_arg_consumed=true
   fi
-  if echo $arg | grep "^--dry-run" > /dev/null 2> /dev/null; then
-    dry_run=true
-    arg_consumed=true
+  if echo ${drm_arg} | grep "^--dry-run" > /dev/null 2> /dev/null; then
+    drm_dry_run=true
+    drm_arg_consumed=true
   fi
-  if echo $arg | grep "^--shared-dir" > /dev/null 2> /dev/null; then
-    shared_dir=`echo $arg | sed "s/^--shared-dir=//"`
-    arg_consumed=true
+  if echo ${drm_arg} | grep "^--shared-dir" > /dev/null 2> /dev/null; then
+    drm_shared_dir=`echo ${drm_arg} | sed "s/^--shared-dir=//"`
+    drm_arg_consumed=true
   fi
-  if echo $arg | grep "^--mount-point" > /dev/null 2> /dev/null; then
-    mount_point=`echo $arg | sed "s/^--mount-point=//"`
-    arg_consumed=true
+  if echo ${drm_arg} | grep "^--mount-point" > /dev/null 2> /dev/null; then
+    drm_mount_point=`echo ${drm_arg} | sed "s/^--mount-point=//"`
+    drm_arg_consumed=true
   fi
-  if echo $arg | grep "^--image-name" > /dev/null 2> /dev/null; then
-    image_name=`echo $arg | sed "s/^--image-name=//"`
-    arg_consumed=true
+  if echo ${drm_arg} | grep "^--image-name" > /dev/null 2> /dev/null; then
+    drm_image_name=`echo ${drm_arg} | sed "s/^--image-name=//"`
+    drm_arg_consumed=true
   fi
-  if echo $arg | grep "^--image-tag" > /dev/null 2> /dev/null; then
-    image_tag=`echo $arg | sed "s/^--image-tag=//"`
-    arg_consumed=true
+  if echo ${drm_arg} | grep "^--image-tag" > /dev/null 2> /dev/null; then
+    drm_image_tag=`echo ${drm_arg} | sed "s/^--image-tag=//"`
+    drm_arg_consumed=true
   fi
-  if echo $arg | grep "^--extra-args" > /dev/null 2> /dev/null; then
-    extra_args=`echo $ararg | sed "s/^--extra-args=//"`
-    arg_consumed=true
+  if echo ${drm_arg} | grep "^--extra-args" > /dev/null 2> /dev/null; then
+    drm_extra_args=`echo ${drm_arg} | sed "s/^--extra-args=//"`
+    drm_arg_consumed=true
   fi
-  if [ "x${arg_consumed}" == "x" ]; then
-    echo "Unknown argument: \"${arg}\""
+  if [ "x${drm_arg_consumed}" == "x" ]; then
+    echo "Unknown argument: \"${drm_arg}\""
     echo
-    usage
+    drm_usage
     exit 1
   fi
 done
 
 # check arguments (<container-name> and <ssh-port> are required
 # for anything more than help messages)
-if [ "x${help_only}" != "x" ]; then
-  usage
+if [ "x${drm_help_only}" != "x" ]; then
+  drm_usage
   exit 1
 fi
 
 # create container
-docker_run_command="docker run --detach --name=\"${container_name}\" --publish=${ssh_port}:22"
-if [ "x${shared_dir}" != "x" ]; then
-  docker_run_command="${docker_run_command} --volume=\"${shared_dir}:${mount_point}\""
+drm_docker_run_command="docker run --detach --name=\"${drm_container_name}\" --publish=${drm_ssh_port}:22"
+if [ "x${drm_shared_dir}" != "x" ]; then
+  drm_docker_run_command="${drm_docker_run_command} --volume=\"${drm_shared_dir}:${drm_mount_point}\""
 fi
-if [ "x${extra_args}" != "x" ]; then
-  docker_run_command="${docker_run_command} ${extra_args}"
+if [ "x${drm_extra_args}" != "x" ]; then
+  drm_docker_run_command="${drm_docker_run_command} ${drm_extra_args}"
 fi
-docker_run_command="${docker_run_command} ${image_name}:${image_tag}"
-if [ "x${verbose}" != "x" ]; then
-  echo "Creating container \"${container_name}\": ${docker_run_command}"
+drm_docker_run_command="${drm_docker_run_command} ${drm_image_name}:${drm_image_tag}"
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "Creating container \"${drm_container_name}\": ${drm_docker_run_command}"
 fi
-if [ "x${dry_run}" == "x" ]; then
-  eval "${docker_run_command}"
+if [ "x${drm_dry_run}" == "x" ]; then
+  eval "${drm_docker_run_command}"
 fi
 
 
