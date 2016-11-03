@@ -32,6 +32,8 @@ Options:
 
   -v, --version               print version
 
+  --verbose                   produce verbose output
+
   Each command accepts its own specific options. See command-specific
   help for more information.
 EOF
@@ -39,15 +41,8 @@ EOF
 
 # parameter (default) values
 drm_command=
+drm_verbose=
 drm_options=()
-
-# at least one argument is required
-if [ ${#} -lt 1 ]; then
-  echo "${drm_program_name}: Command must be specified"
-  echo
-  drm_usage
-  exit 1
-fi
 
 # parse arguments
 if echo ${1} | grep "^[a-zA-Z][a-zA-Z]*"$ > /dev/null 2> /dev/null; then
@@ -74,6 +69,13 @@ for drm_arg in "${@}"; do
       echo "${drm_program_name} ${drm_program_version}"
       exit 0
       ;;
+    --verbose)
+      drm_verbose=true
+      if [ ${#drm_options} -gt 0 ]; then
+        drm_arg=" ${drm_arg}"
+      fi
+      drm_options+="${drm_arg}"
+      ;;
     *)
       if [ ${#drm_options} -gt 0 ]; then
         drm_arg=" ${drm_arg}"
@@ -83,6 +85,14 @@ for drm_arg in "${@}"; do
   esac
 done
 
+# check command
+if [ "x${drm_command}" == "x" ]; then
+  echo "${drm_program_name}: Command must be specified"
+  echo
+  drm_usage
+  exit 1
+fi
+
 # determine script path
 drm_path=`dirname "${0}"`
 
@@ -90,6 +100,9 @@ drm_path=`dirname "${0}"`
 drm_wd="`echo ${0} | sed -n '/\//{s/\/[^\/]*$//;p;}'`"
 drm_wd="`(cd "${drm_wd}/..";pwd)`"
 export drm_wd
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "${drm_program_name}: Working directory: ${drm_wd}"
+fi
 
 # call specified script
 eval "${drm_path}/../usr/libexec/drm-${drm_command} ${drm_options}"
