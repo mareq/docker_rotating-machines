@@ -81,10 +81,6 @@ for drm_arg in "${@}"; do
         drm_usage
         exit 0
       fi
-      if [ ${#drm_options} -gt 0 ]; then
-        drm_arg=" ${drm_arg}"
-      fi
-      drm_options+="${drm_arg}"
       ;;
     -v | --version)
       echo "${drm_program_name} ${drm_program_version}"
@@ -92,18 +88,12 @@ for drm_arg in "${@}"; do
       ;;
     --verbose)
       drm_verbose=true
-      if [ ${#drm_options} -gt 0 ]; then
-        drm_arg=" ${drm_arg}"
-      fi
-      drm_options+="${drm_arg}"
-      ;;
-    *)
-      if [ ${#drm_options} -gt 0 ]; then
-        drm_arg=" ${drm_arg}"
-      fi
-      drm_options+="${drm_arg}"
       ;;
   esac
+  if [ ${#drm_options} -gt 0 ]; then
+    drm_arg=" ${drm_arg}"
+  fi
+  drm_options+="${drm_arg}"
 done
 
 # check command
