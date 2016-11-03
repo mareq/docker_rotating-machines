@@ -13,12 +13,22 @@ BEWARE: THIS WILL DELETE ALL FILES PRESENT IN scripts/enabled DIRECTORY!
 
 Usage: ${drm_program_name}
 
+Options:
+
+  --verbose                   produce verbose output
+
+  -n, --dry-run               do not execute any docker commands
+
 EOF
 }
 
+# parameter (default) values
+drm_verbose=
+drm_dry_run=
+
 # parse arguments
-drm_options_short="h"
-drm_options_long="help"
+drm_options_short="hn"
+drm_options_long="help,verbose,dry-run"
 drm_options=`getopt -o "${drm_options_short}" -l "${drm_options_long}" -n "${drm_program_name}" -- "${@}"`
 drm_options_err=${?}
 eval set -- $drm_options
@@ -27,6 +37,14 @@ while true; do
     -h | --help)
       drm_usage
       exit 0
+      ;;
+    --verbose)
+      drm_verbose=true
+      shift
+      ;;
+    -n | --dry-run)
+      drm_dry_run=true
+      shift 1
       ;;
     --)
       shift
@@ -52,15 +70,37 @@ if [ "x${drm_wd}" == "x" ]; then
 fi
 
 # clean enabled scripts
-rm ${drm_wd}/scripts/enabled/* > /dev/null 2> /dev/null
+drm_rm_command="rm ${drm_wd}/scripts/enabled/*"
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "${drm_program_name}: Disabling all scripts: ${drm_rm_command}"
+fi
+if [ "x${drm_dry_run}" == "x" ]; then
+  eval "${drm_rm_command} > /dev/null 2> /dev/null"
+fi
 
 # restore defaults
-cd ${drm_wd}/scripts/enabled
-ln -s -v ../available/locale-en-gb-utf8.sh 10_locale-en-gb-utf8.sh
-ln -s -v ../available/devel-cpp.sh 20_devel-cpp.sh
-ln -s -v ../available/environment-vim.sh 30_environment-vim.sh
-ln -s -v ../available/users-default.sh 40_users-default.sh
-ln -s -v ../available/users-custom.sh 50_users-custom.sh
+drm_ln_10_command="ln -s -v ../available/locale-en-gb-utf8.sh 10_locale-en-gb-utf8.sh"
+drm_ln_20_command="ln -s -v ../available/devel-cpp.sh 20_devel-cpp.sh"
+drm_ln_30_command="ln -s -v ../available/environment-vim.sh 30_environment-vim.sh"
+drm_ln_40_command="ln -s -v ../available/users-default.sh 40_users-default.sh"
+drm_ln_50_command="ln -s -v ../available/users-custom.sh 50_users-custom.sh"
+drm_ln_redirect=""
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "${drm_program_name}: Enabling script: ${drm_ln_10_command}"
+  echo "${drm_program_name}: Enabling script: ${drm_ln_20_command}"
+  echo "${drm_program_name}: Enabling script: ${drm_ln_30_command}"
+  echo "${drm_program_name}: Enabling script: ${drm_ln_40_command}"
+  echo "${drm_program_name}: Enabling script: ${drm_ln_50_command}"
+  drm_ln_redirect="> /dev/null 2> /dev/null"
+fi
+if [ "x${drm_dry_run}" == "x" ]; then
+  cd ${drm_wd}/scripts/enabled
+  eval "${drm_ln_10_command} ${drm_ln_redirect}"
+  eval "${drm_ln_20_command} ${drm_ln_redirect}"
+  eval "${drm_ln_30_command} ${drm_ln_redirect}"
+  eval "${drm_ln_40_command} ${drm_ln_redirect}"
+  eval "${drm_ln_50_command} ${drm_ln_redirect}"
+fi
 
 
 # vim: set ts=2 sw=2 et:
