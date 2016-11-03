@@ -39,10 +39,25 @@ Options:
 EOF
 }
 
+# auxiliary function to find valid path in a list
+function search_for_path()
+{
+  options_name=$1[@]
+  options=("${!options_name}")
+
+  for d in "${options[@]}"; do
+    if [ -d "${d}" ]; then
+      echo "${d}"
+      break
+    fi
+  done
+}
+
 # parameter (default) values
 drm_command=
 drm_verbose=
 drm_options=()
+drm_path_libexec=""
 
 # parse arguments
 if echo ${1} | grep "^[a-zA-Z][a-zA-Z]*"$ > /dev/null 2> /dev/null; then
@@ -93,8 +108,27 @@ if [ "x${drm_command}" == "x" ]; then
   exit 1
 fi
 
-# determine script path
-drm_path=`dirname "${0}"`
+# libexecdir: /usr/local/libexec/
+if [ -z "${drm_path_libexec}" ]; then
+  drm_path_libexec_options=(
+    "$(dirname $(dirname $(which ${0})))/usr/libexec/"
+    "${HOME}/.${drm_program_name}/usr/libexec/"
+    "/usr/local/libexec/${drm_program_name}/"
+    "/usr/local/lib/${drm_program_name}/"
+    "/usr/libexec/${drm_program_name}/"
+    "/usr/lib/${drm_program_name}/"
+  )
+  drm_path_libexec=`search_for_path drm_path_libexec_options`
+fi
+if [ -z "${drm_path_libexec}" ]; then
+  echo "${drm_program_name}: FATAL: Unable to find libexec directory"
+  exit 1
+fi
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "${drm_program_name}: Directory path: libexec: ${drm_path_libexec}"
+fi
+drm_path_libexec="`(cd "${drm_path_libexec}";pwd)`"
+export drm_path_libexec
 
 # export script working directory
 drm_wd="`echo ${0} | sed -n '/\//{s/\/[^\/]*$//;p;}'`"
@@ -105,7 +139,7 @@ if [ "x${drm_verbose}" != "x" ]; then
 fi
 
 # call specified script
-eval "${drm_path}/../usr/libexec/drm-${drm_command} ${drm_options}"
+eval "${drm_path_libexec}/drm-${drm_command} ${drm_options}"
 
 
 # vim: set ts=2 sw=2 et:
