@@ -63,14 +63,8 @@ if [ ${drm_options_err} -ne 0 ]; then
   exit 1
 fi
 
-# determine script working directory
-if [ "x${drm_wd}" == "x" ]; then
-  drm_wd="`echo ${0} | sed -n '/\//{s/\/[^\/]*$//;p;}'`"
-  drm_wd="`(cd "${drm_wd}/../..";pwd)`"
-fi
-
 # clean enabled scripts
-drm_rm_command="rm ${drm_wd}/scripts/enabled/*"
+drm_rm_command="rm ${drm_path_work}/scripts/enabled/*"
 if [ "x${drm_verbose}" != "x" ]; then
   echo "${drm_program_name}: Disabling all scripts: ${drm_rm_command}"
 fi
@@ -94,8 +88,8 @@ if [ "x${drm_verbose}" != "x" ]; then
   drm_ln_redirect="> /dev/null 2> /dev/null"
 fi
 if [ "x${drm_dry_run}" == "x" ]; then
-  mkdir -p ${drm_wd}/scripts/enabled
-  cd ${drm_wd}/scripts/enabled
+  mkdir -p ${drm_path_work}/scripts/enabled
+  cd ${drm_path_work}/scripts/enabled
   eval "${drm_ln_10_command} ${drm_ln_redirect}"
   eval "${drm_ln_20_command} ${drm_ln_redirect}"
   eval "${drm_ln_30_command} ${drm_ln_redirect}"

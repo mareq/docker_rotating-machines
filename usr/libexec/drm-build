@@ -31,12 +31,6 @@ Options: (defaults in [brackets] after descriptions)
 EOF
 }
 
-# determine script working directory
-if [ "x${drm_wd}" == "x" ]; then
-  drm_wd="`echo ${0} | sed -n '/\//{s/\/[^\/]*$//;p;}'`"
-  drm_wd="`(cd "${drm_wd}/../..";pwd)`"
-fi
-
 # parameter (default) values
 drm_verbose=
 drm_dry_run=
@@ -120,10 +114,10 @@ drm_tempdir=`mktemp -d`
 if [ "x${drm_verbose}" != "x" ]; then
   echo "Docker build directory: ${drm_tempdir}"
 fi
-cp ${drm_wd}/scripts/Dockerfile ${drm_tempdir}/.
+cp ${drm_path_work}/scripts/Dockerfile ${drm_tempdir}/.
 
 # add all enabled scripts
-drm_scripts=( `find ${drm_wd}/scripts/enabled/. -maxdepth 1 -not -type d -printf '%f\n' | sort` )
+drm_scripts=( `find ${drm_path_work}/scripts/enabled/. -maxdepth 1 -not -type d -printf '%f\n' | sort` )
 if [ ${#drm_scripts[@]} -ne 0 ]; then
   # script directory need to be created in container
   command="`cat <<EOF
@@ -143,7 +137,7 @@ RUN /root/docker-scripts/${drm_script}
 EOF
 `"
     sed --in-place "s|@@scripts@@|`echo "${command}" | sed '{:q;N;s/\n/\\\\n/g;t q}'`|" ${drm_tempdir}/Dockerfile
-    cp ${drm_wd}/scripts/enabled/${drm_script} ${drm_tempdir}/.
+    cp ${drm_path_work}/scripts/enabled/${drm_script} ${drm_tempdir}/.
     if [ "x${drm_verbose}" != "x" ]; then
       echo "Added script: ${drm_script}"
     fi

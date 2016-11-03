@@ -151,12 +151,11 @@ drm_path_data="`(cd "${drm_path_data}";pwd)`"
 export drm_path_data
 
 # export script working directory
-drm_wd="`echo ${0} | sed -n '/\//{s/\/[^\/]*$//;p;}'`"
-drm_wd="`(cd "${drm_wd}/..";pwd)`"
-export drm_wd
+drm_path_work="`pwd`"
 if [ "x${drm_verbose}" != "x" ]; then
-  echo "${drm_program_name}: Working directory: ${drm_wd}"
+  echo "${drm_program_name}: Directory path: work: ${drm_path_work}"
 fi
+export drm_path_work
 
 # call specified script
 eval "${drm_path_libexec}/drm-${drm_command} ${drm_options}"
