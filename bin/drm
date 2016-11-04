@@ -3,6 +3,8 @@
 # constants
 export drm_program_name="${0##*/}"
 export drm_program_version="v0.2.0"
+export drm_dirname_drm_public="${drm_program_name}"
+export drm_dirname_drm_private=".${drm_program_name}"
 
 # auxiliary function to print out usage help
 function drm_usage()
@@ -18,6 +20,8 @@ Commands: (defaults in [brackets] after descriptions)
 
   help [<command>]            display help for specified command
                               [display this general help]
+
+  init                        initialize working directory
 
   buid                        create new Docker image for
                               "rotating machine"
@@ -36,6 +40,7 @@ Options:
 
   Each command accepts its own specific options. See command-specific
   help for more information.
+
 EOF
 }
 
@@ -107,12 +112,12 @@ fi
 # libexecdir: /usr/local/libexec/
 if [ -z "${drm_path_libexec}" ]; then
   drm_path_libexec_options=(
-    "$(dirname $(dirname $(which ${0})))/usr/libexec/"
-    "${HOME}/.${drm_program_name}/usr/libexec/"
-    "/usr/local/libexec/${drm_program_name}/"
-    "/usr/local/lib/${drm_program_name}/"
-    "/usr/libexec/${drm_program_name}/"
-    "/usr/lib/${drm_program_name}/"
+    "$(dirname $(dirname $(which ${0})))/libexec/"
+    "${HOME}/.${drm_program_name}/libexec/"
+    "/usr/local/libexec/${drm_dirname_drm_public}/"
+    "/usr/local/lib/${drm_dirname_drm_public}/"
+    "/usr/libexec/${drm_dirname_drm_public}/"
+    "/usr/lib/${drm_dirname_drm_public}/"
   )
   drm_path_libexec=`search_for_path drm_path_libexec_options`
 fi
@@ -129,10 +134,10 @@ export drm_path_libexec
 # datadir: /usr/local/share/
 if [ -z "${drm_path_data}" ]; then
   drm_path_data_options=(
-    "$(dirname $(dirname $(which ${0})))/usr/share/"
-    "${HOME}/.${drm_program_name}/usr/share/"
-    "/usr/local/share/${drm_program_name}/"
-    "/usr/share/${drm_program_name}/"
+    "$(dirname $(dirname $(which ${0})))/data/"
+    "${HOME}/${drm_dirname_drm_private}/data/"
+    "/usr/local/share/${drm_dirname_drm_public}/"
+    "/usr/share/${drm_dirname_drm_public}/"
   )
   drm_path_data=`search_for_path drm_path_data_options`
 fi

@@ -1,0 +1,121 @@
+#!/bin/bash
+
+# constants
+drm_program_name="${drm_program_name} ${0##*/drm-}"
+
+# auxiliary function to print out usage help
+function drm_usage()
+{
+    cat <<EOF
+Restores configuration of custom scripts.
+
+BEWARE: THIS WILL DELETE ALL FILES PRESENT IN scripts/enabled DIRECTORY!
+
+Usage: ${drm_program_name}
+
+Options:
+
+  --verbose                   produce verbose output
+
+  -n, --dry-run               do not execute any docker commands
+
+EOF
+}
+
+# parameter (default) values
+drm_verbose=
+drm_dry_run=
+
+# parse arguments
+drm_options_short="hn"
+drm_options_long="help,verbose,dry-run"
+drm_options=`getopt -o "${drm_options_short}" -l "${drm_options_long}" -n "${drm_program_name}" -- "${@}"`
+drm_options_err=${?}
+eval set -- $drm_options
+while true; do
+  case "${1}" in
+    -h | --help)
+      drm_usage
+      exit 0
+      ;;
+    --verbose)
+      drm_verbose=true
+      shift
+      ;;
+    -n | --dry-run)
+      drm_dry_run=true
+      shift 1
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      echo
+      drm_usage
+      exit 1
+      ;;
+  esac
+done
+if [ ${drm_options_err} -ne 0 ]; then
+  echo
+  drm_usage
+  exit 1
+fi
+
+# clean template
+drm_clean_template_command="rm ${drm_path_work}/Dockerfile"
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "${drm_program_name}: Removing tamplate: ${drm_clean_template_command}"
+fi
+if [ "x${drm_dry_run}" == "x" ]; then
+  eval "${drm_clean_template_command} > /dev/null 2> /dev/null"
+fi
+
+# restore default template
+drm_enable_template_command="ln -s -v ${drm_path_work}/${drm_dirname_drm_private}/templates/Dockerfile ."
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "${drm_program_name}: Enabling tamplate: ${drm_enable_template_command}"
+fi
+if [ "x${drm_dry_run}" == "x" ]; then
+  eval "${drm_enable_template_command}"
+fi
+
+# clean enabled scripts
+drm_clean_scripts_command="rm -rf ${drm_path_work}/scripts; mkdir ${drm_path_work}/scripts"
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "${drm_program_name}: Disabling all scripts: ${drm_clean_scripts_command}"
+fi
+if [ "x${drm_dry_run}" == "x" ]; then
+  eval "${drm_clean_scripts_command} > /dev/null 2> /dev/null"
+fi
+
+# restore enabled scripts
+drm_enable_script_10_command="ln -s -v ${drm_path_work}/${drm_dirname_drm_private}/scripts/locale-en-gb-utf8.sh 10_locale-en-gb-utf8.sh"
+drm_enable_script_20_command="ln -s -v ${drm_path_work}/${drm_dirname_drm_private}/scripts/devel-cpp.sh 20_devel-cpp.sh"
+drm_enable_script_30_command="ln -s -v ${drm_path_work}/${drm_dirname_drm_private}/scripts/environment-vim.sh 30_environment-vim.sh"
+drm_enable_script_40_command="ln -s -v ${drm_path_work}/${drm_dirname_drm_private}/scripts/users-default.sh 40_users-default.sh"
+drm_enable_script_50_command="ln -s -v ${drm_path_work}/${drm_dirname_drm_private}/scripts/users-custom.sh 50_users-custom.sh"
+drm_enable_script_redirect=""
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "${drm_program_name}: Enabling script: ${drm_enable_script_10_command}"
+  echo "${drm_program_name}: Enabling script: ${drm_enable_script_20_command}"
+  echo "${drm_program_name}: Enabling script: ${drm_enable_script_30_command}"
+  echo "${drm_program_name}: Enabling script: ${drm_enable_script_40_command}"
+  echo "${drm_program_name}: Enabling script: ${drm_enable_script_50_command}"
+  drm_enable_script_redirect="> /dev/null 2> /dev/null"
+fi
+if [ "x${drm_dry_run}" == "x" ]; then
+  mkdir -p ${drm_path_work}/scripts/enabled
+  cd ${drm_path_work}/scripts
+  eval "${drm_enable_script_10_command} ${drm_enable_script_redirect}"
+  eval "${drm_enable_script_20_command} ${drm_enable_script_redirect}"
+  eval "${drm_enable_script_30_command} ${drm_enable_script_redirect}"
+  eval "${drm_enable_script_40_command} ${drm_enable_script_redirect}"
+  eval "${drm_enable_script_50_command} ${drm_enable_script_redirect}"
+fi
+
+
+# vim: set ts=2 sw=2 et:
+
+

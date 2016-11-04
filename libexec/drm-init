@@ -1,0 +1,74 @@
+#!/bin/bash
+
+# constants
+drm_program_name="${drm_program_name} ${0##*/drm-}"
+
+# auxiliary function to print out usage help
+function drm_usage()
+{
+    cat <<EOF
+Initialize working directory.
+
+Usage: ${drm_program_name}
+
+EOF
+}
+
+# parse arguments
+drm_options_short="hn"
+drm_options_long="help,verbose,dry-run"
+drm_options=`getopt -o "${drm_options_short}" -l "${drm_options_long}" -n "${drm_program_name}" -- "${@}"`
+drm_options_err=${?}
+eval set -- $drm_options
+while true; do
+  case "${1}" in
+    -h | --help)
+      drm_usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      echo
+      drm_usage
+      exit 1
+      ;;
+  esac
+done
+if [ ${drm_options_err} -ne 0 ]; then
+  echo
+  drm_usage
+  exit 1
+fi
+
+# private drm directory path
+drm_path_drm_private="${drm_path_work}/${drm_dirname_drm_private}"
+
+# check that the working directory is not yet initialized
+if [ -d "${drm_path_work}/${drm_dirname_drm_private}" ]; then
+  echo "${drm_program_name}: Working directory already initialized"
+  exit 1
+fi
+
+# create private drm directory
+if [ -a "${drm_path_work}/${drm_dirname_drm_private}" ]; then
+  echo "${drm_program_name}: Can not initialize working directory: File already exists: ${drm_path_work}/${drm_dirname_drm_private}"
+  exit 1
+fi
+mkdir "${drm_path_work}/${drm_dirname_drm_private}"
+
+# write version tag file
+echo "${drm_program_version}" > "${drm_path_work}/${drm_dirname_drm_private}/version"
+
+# copy over available templates
+cp -r "${drm_path_data}/templates" "${drm_path_work}/${drm_dirname_drm_private}/."
+
+# copy over available scripts
+cp -r "${drm_path_data}/scripts" "${drm_path_work}/${drm_dirname_drm_private}/."
+
+
+# vim: set ts=2 sw=2 et:
+
+
