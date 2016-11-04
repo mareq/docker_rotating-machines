@@ -110,6 +110,16 @@ if [ "x${drm_dry_run}" == "x" ]; then
   eval "${drm_scripts_command}"
 fi
 
+# reset working directory to the default state
+drm_reset_command="${drm_path_libexec}/drm-reset"
+if [ "x${drm_verbose}" != "x" ]; then
+  drm_reset_command="${drm_reset_command} --verbose"
+fi
+if [ "x${drm_dry_run}" == "x" ]; then
+  drm_reset_command="${drm_reset_command} --dry-run"
+fi
+eval "${drm_reset_command}"
+
 
 # vim: set ts=2 sw=2 et:
 
