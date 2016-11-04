@@ -11,8 +11,18 @@ Initialize working directory.
 
 Usage: ${drm_program_name}
 
+Options:
+
+  --verbose                   produce verbose output
+
+  -n, --dry-run               do not execute any commands
+
 EOF
 }
+
+# parameter (default) values
+drm_verbose=
+drm_dry_run=
 
 # parse arguments
 drm_options_short="hn"
@@ -25,6 +35,14 @@ while true; do
     -h | --help)
       drm_usage
       exit 0
+      ;;
+    --verbose)
+      drm_verbose=true
+      shift
+      ;;
+    -n | --dry-run)
+      drm_dry_run=true
+      shift 1
       ;;
     --)
       shift
@@ -57,16 +75,40 @@ if [ -a "${drm_path_work}/${drm_dirname_drm_private}" ]; then
   echo "${drm_program_name}: Can not initialize working directory: File already exists: ${drm_path_work}/${drm_dirname_drm_private}"
   exit 1
 fi
-mkdir "${drm_path_work}/${drm_dirname_drm_private}"
+drm_mkdir_command="mkdir ${drm_path_work}/${drm_dirname_drm_private}"
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "${drm_program_name}: Creating DRM directory: ${drm_mkdir_command}"
+fi
+if [ "x${drm_dry_run}" == "x" ]; then
+  eval "${drm_mkdir_command}"
+fi
 
 # write version tag file
-echo "${drm_program_version}" > "${drm_path_work}/${drm_dirname_drm_private}/version"
+drm_version_tag_command="echo ${drm_program_version} > ${drm_path_work}/${drm_dirname_drm_private}/version"
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "${drm_program_name}: Writing version tag file: ${drm_version_tag_command}"
+fi
+if [ "x${drm_dry_run}" == "x" ]; then
+  eval "${drm_version_tag_command}"
+fi
 
 # copy over available templates
-cp -r "${drm_path_data}/templates" "${drm_path_work}/${drm_dirname_drm_private}/."
+drm_templates_command="cp -r ${drm_path_data}/templates ${drm_path_work}/${drm_dirname_drm_private}/."
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "${drm_program_name}: Installing available templates: ${drm_templates_command}"
+fi
+if [ "x${drm_dry_run}" == "x" ]; then
+  eval "${drm_templates_command}"
+fi
 
 # copy over available scripts
-cp -r "${drm_path_data}/scripts" "${drm_path_work}/${drm_dirname_drm_private}/."
+drm_scripts_command="cp -r ${drm_path_data}/scripts ${drm_path_work}/${drm_dirname_drm_private}/."
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "${drm_program_name}: Installing available scripts: ${drm_scripts_command}"
+fi
+if [ "x${drm_dry_run}" == "x" ]; then
+  eval "${drm_scripts_command}"
+fi
 
 
 # vim: set ts=2 sw=2 et:
