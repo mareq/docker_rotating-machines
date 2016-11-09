@@ -115,7 +115,7 @@ drm_reset_command="${drm_path_libexec}/drm-reset"
 if [ "x${drm_verbose}" != "x" ]; then
   drm_reset_command="${drm_reset_command} --verbose"
 fi
-if [ "x${drm_dry_run}" == "x" ]; then
+if [ "x${drm_dry_run}" != "x" ]; then
   drm_reset_command="${drm_reset_command} --dry-run"
 fi
 eval "${drm_reset_command}"
