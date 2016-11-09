@@ -9,7 +9,7 @@ function drm_usage()
     cat <<EOF
 Restores configuration of custom scripts.
 
-BEWARE: THIS WILL DELETE ALL FILES PRESENT IN scripts/enabled DIRECTORY!
+BEWARE: THIS WILL DELETE FILES PRESENT IN THE WORKING DIRECTORY!
 
 Usage: ${drm_program_name}
 
@@ -106,7 +106,7 @@ if [ "x${drm_verbose}" != "x" ]; then
   drm_enable_script_redirect="> /dev/null 2> /dev/null"
 fi
 if [ "x${drm_dry_run}" == "x" ]; then
-  mkdir -p ${drm_path_work}/scripts/enabled
+  mkdir -p ${drm_path_work}/scripts
   cd ${drm_path_work}/scripts
   eval "${drm_enable_script_10_command} ${drm_enable_script_redirect}"
   eval "${drm_enable_script_20_command} ${drm_enable_script_redirect}"
