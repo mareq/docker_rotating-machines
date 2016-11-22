@@ -111,7 +111,7 @@ if [ "x${drm_dry_run}" == "x" ]; then
 fi
 
 # reset working directory to the default state
-drm_reset_command="${drm_path_libexec}/drm-reset"
+drm_reset_command="${drm_path_libexec}/project/drm-reset"
 if [ "x${drm_verbose}" != "x" ]; then
   drm_reset_command="${drm_reset_command} --verbose"
 fi

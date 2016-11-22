@@ -12,7 +12,7 @@ function drm_usage()
     cat <<EOF
 Docker "rotating machines" manager.
 
-Usage: ${drm_program_name} <command> [options]
+Usage: ${drm_program_name} <command> <operation> [options]
    or: ${drm_program_name} --help
    or: ${drm_program_name} --version
 
@@ -21,14 +21,16 @@ Commands: (defaults in [brackets] after descriptions)
   help [<command>]            display help for specified command
                               [display this general help]
 
-  init                        initialize working directory
+  project                     drm projects management
 
-  buid                        create new Docker image for
-                              "rotating machine"
+  image                       docker images management
 
-  start                       create new Docker container
+  container                   docker containers management
 
-  reset                       restore configuration of custom scripts
+Operation:
+
+  Each command accepts its own specific operations. See command-specific
+  help for more information.
 
 Options:
 
@@ -38,7 +40,7 @@ Options:
 
   --verbose                   produce verbose output
 
-  Each command accepts its own specific options. See command-specific
+  Each operation accepts its own specific options. See operation-specific
   help for more information.
 
 EOF

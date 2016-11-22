@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# constants
+drm_program_name="${drm_program_name} ${0##*/drm-}"
+
+# auxiliary function to print out usage help
+function drm_usage()
+{
+    cat <<EOF
+Initialize working directory.
+
+Usage: ${drm_program_name} <operation> [options]
+
+Operations:
+
+  start                       create new Docker container
+
+Options:
+
+  Each operation accepts its own specific options. See operation-specific
+  help for more information.
+
+EOF
+}
+
+source "${drm_path_libexec}/command/drm-command"
+drm_command ${@}
+
+# vim: set ts=2 sw=2 et:
+
+
