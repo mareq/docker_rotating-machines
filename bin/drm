@@ -159,7 +159,15 @@ fi
 export drm_path_work
 
 # call specified script
-eval "${drm_path_libexec}/drm-${drm_command} ${drm_options}"
+drm_script="${drm_path_libexec}/drm-${drm_command}"
+if [ ! -x "${drm_script}" ]; then
+  echo "${drm_program_name}: Invalid command: '${drm_command}'"
+  echo
+  drm_usage
+  exit 1
+fi
+export drm_command
+eval "${drm_script} ${drm_options}"
 
 
 # vim: set ts=2 sw=2 et:
