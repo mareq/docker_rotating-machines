@@ -1,0 +1,112 @@
+#!/bin/bash
+
+# constants
+drm_program_name="${drm_program_name} ${0##*/drm-}"
+
+# auxiliary function to print out usage help
+function drm_usage()
+{
+    cat <<EOF
+Creates new Docker image for "rotating machine".
+
+Usage: ${drm_program_name} [options]
+
+Options: (defaults in [brackets] after descriptions)
+
+  -h, --help                  print this help
+
+  -a, --all                   list all modules
+                              [only enabled modules are listed by default]
+
+EOF
+}
+
+# print help if requested
+if [ "x${drm_help}" != "x" ]; then
+  drm_usage
+  exit 0
+fi
+
+# parameter (default) values
+drm_ls_all=
+
+# parse arguments
+drm_options_short="ha"
+drm_options_long="help,all"
+drm_options=`getopt -o "${drm_options_short}" -l "${drm_options_long}" -n "${drm_program_name}" -- "${@}"`
+drm_options_err=${?}
+eval set -- $drm_options
+while true; do
+  case "${1}" in
+    -h | --help)
+      drm_usage
+      exit 0
+      ;;
+    -a | --all)
+      drm_ls_all=true
+      shift 1
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      echo
+      drm_usage
+      exit 1
+      ;;
+  esac
+done
+if [ ${drm_options_err} -ne 0 ]; then
+  echo
+  drm_usage
+  exit 1
+fi
+
+# make common functions available
+source "${drm_path_libexec}/command/drm-module"
+
+# list modules
+if [ "x${drm_ls_all}" == "x" ]; then
+  # enabled modules
+  drm_mods=`drm_modules_enabled_ls`
+  #echo "total `echo "${drm_mods[@]}" | wc -l`"
+  echo "${drm_mods[@]}"
+  exit 0
+else
+  # all modules
+  drm_mods_enabled=( `drm_modules_enabled_ls | sort -k2` )
+  drm_mods_all=( `drm_modules_all_ls` )
+  #echo "total ${#drm_mods_all[@]}"
+  i=0 # see comment below
+  for m in "${drm_mods_all[@]}"; do
+    p="--"
+    while [ $i -lt ${#drm_mods_enabled[@]} ]; do
+      # enabled modules are in format "<priority> <module>"
+      #   [$i]   -> priority
+      #   [$i+1] -> module
+      if [ "${drm_mods_enabled[$i+1]}" == "${m}" ]; then
+        p="${drm_mods_enabled[$i]}"
+        i=$((i+2)) 
+        break
+      fi
+      if [ "`echo -e "${drm_mods_enabled[$i+1]}\n${m}" | sort | head -n1`" != "${m}" ]; then
+        i=$((i+2)) 
+      else
+        break
+      fi
+    done
+    echo -e "${p}\t${m}"
+  done
+  exit 0
+fi
+
+# thou shalt never reacheth this point
+echo
+drm_usage
+exit 1
+
+
+# vim: set ts=2 sw=2 et:
+
+

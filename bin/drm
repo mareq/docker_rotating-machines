@@ -23,6 +23,8 @@ Commands: (defaults in [brackets] after descriptions)
 
   project, prj                drm projects management
 
+  module, mod                 drm modules management
+
   image, img                  docker images management
 
   container, ctn              docker containers management
