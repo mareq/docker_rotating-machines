@@ -62,6 +62,7 @@ function search_for_path()
 
 # parameter (default) values
 drm_command=
+drm_help=
 drm_verbose=
 drm_options=()
 drm_path_libexec=""
@@ -72,7 +73,7 @@ if echo ${1} | grep "^[a-zA-Z][a-zA-Z]*"$ > /dev/null 2> /dev/null; then
   shift
   if [ "${drm_command}" == "help" ]; then
     if echo ${1} | grep "^[a-zA-Z][a-zA-Z]*"$ > /dev/null 2> /dev/null; then
-      drm_options=("--help")
+      export drm_help=true
       drm_command="${1}"
       shift
     else
@@ -88,19 +89,22 @@ for drm_arg in "${@}"; do
         drm_usage
         exit 0
       fi
+      export drm_help=true
       ;;
     -v | --version)
       echo "${drm_program_name} ${drm_program_version}"
       exit 0
       ;;
     --verbose)
-      drm_verbose=true
+      export drm_verbose=true
+      ;;
+    *)
+      if [ ${#drm_options} -gt 0 ]; then
+        drm_arg=" ${drm_arg}"
+      fi
+      drm_options+="${drm_arg}"
       ;;
   esac
-  if [ ${#drm_options} -gt 0 ]; then
-    drm_arg=" ${drm_arg}"
-  fi
-  drm_options+="${drm_arg}"
 done
 
 # check command

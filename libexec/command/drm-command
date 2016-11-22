@@ -3,7 +3,6 @@ function drm_command()
 {
   # parameter (default) values
   drm_operation=
-  drm_options=()
 
   # parse arguments
   if echo ${1} | grep "^[a-zA-Z][a-zA-Z]*"$ > /dev/null 2> /dev/null; then
@@ -11,7 +10,7 @@ function drm_command()
     shift
     if [ "${drm_operation}" == "help" ]; then
       if echo ${1} | grep "^[a-zA-Z][a-zA-Z]*"$ > /dev/null 2> /dev/null; then
-        drm_options=("--help")
+        export drm_help=true
         drm_operation="${1}"
         shift
       else
@@ -19,12 +18,11 @@ function drm_command()
         exit 0
       fi
     fi
-    drm_script="${drm_path_libexec}/${drm_command}/drm-${drm_operation}"
-    if [ ! -x "${drm_script}" ]; then
-      echo "${drm_program_name}: Invalid operation: '${drm_operation}'"
-      echo
+  fi
+  if [ "x${drm_operation}" == "x" ]; then
+    if [ "x${drm_help}" != "x" ]; then
       drm_usage
-      exit 1
+      exit 0
     fi
   fi
 
@@ -35,17 +33,17 @@ function drm_command()
     drm_usage
     exit 1
   fi
-
-  for drm_arg in "${@}"; do
-    if [ ${#drm_options} -gt 0 ]; then
-      drm_arg=" ${drm_arg}"
-    fi
-    drm_options+="${drm_arg}"
-  done
+  drm_script="${drm_path_libexec}/${drm_command}/drm-${drm_operation}"
+  if [ ! -x "${drm_script}" ]; then
+    echo "${drm_program_name}: Invalid operation: '${drm_operation}'"
+    echo
+    drm_usage
+    exit 1
+  fi
 
   # call specified script
   export drm_operation
-  eval "${drm_script} ${drm_options}"
+  eval "${drm_script} ${@}"
 }
 
 

@@ -13,6 +13,8 @@ Usage: ${drm_program_name} [options]
 
 Options: (defaults in [brackets] after descriptions)
 
+  -h, --help                  print this help
+
   --verbose                   produce verbose output
 
   -n, --dry-run               do not execute any docker commands
@@ -31,8 +33,13 @@ Options: (defaults in [brackets] after descriptions)
 EOF
 }
 
+# print help if requested
+if [ "x${drm_help}" != "x" ]; then
+  drm_usage
+  exit 0
+fi
+
 # parameter (default) values
-drm_verbose=
 drm_dry_run=
 drm_image_name="rotating-machine"
 drm_image_tag="latest"
