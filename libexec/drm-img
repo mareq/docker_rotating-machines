@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# redirect
+drm_command="image"
+eval "${drm_path_libexec}/drm-${drm_command}" "${@}"
+
+
+# vim: set ts=2 sw=2 et:
+
+

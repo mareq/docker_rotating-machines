@@ -21,11 +21,11 @@ Commands: (defaults in [brackets] after descriptions)
   help [<command>]            display help for specified command
                               [display this general help]
 
-  project                     drm projects management
+  project, prj                drm projects management
 
-  image                       docker images management
+  image, img                  docker images management
 
-  container                   docker containers management
+  container, ctn              docker containers management
 
 Operation:
 
