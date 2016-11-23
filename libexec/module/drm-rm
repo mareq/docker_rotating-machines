@@ -1,0 +1,125 @@
+#!/bin/bash
+
+# constants
+drm_program_name="${drm_program_name} ${0##*/drm-}"
+
+# auxiliary function to print out usage help
+function drm_usage()
+{
+    cat <<EOF
+Creates new Docker image for "rotating machine".
+
+Usage: ${drm_program_name} <priority> [options]
+   or: ${drm_program_name} <module> [options]
+
+Options: (defaults in [brackets] after descriptions)
+
+  -h, --help                  print this help
+
+EOF
+}
+
+# print help if requested
+if [ "x${drm_help}" != "x" ]; then
+  drm_usage
+  exit 0
+fi
+
+# parameter (default) values
+drm_dry_run=
+drm_priority=""
+drm_priority_regex="[0-9][0-9]"
+drm_module=""
+drm_module_regex="[a-zA-Z0-9_][a-zA-Z0-9_-]*"
+
+# parse arguments
+drm_options_short="hnf"
+drm_options_long="help,dry-run"
+drm_options=`getopt -o "${drm_options_short}" -l "${drm_options_long}" -n "${drm_program_name}" -- "${@}"`
+drm_options_err=${?}
+eval set -- $drm_options
+while true; do
+  case "${1}" in
+    -h | --help)
+      drm_usage
+      exit 0
+      ;;
+    -n | --dry-run)
+      drm_dry_run=true
+      shift 1
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      echo
+      drm_usage
+      exit 1
+      ;;
+  esac
+done
+if [ ${drm_options_err} -ne 0 ]; then
+  echo
+  drm_usage
+  exit 1
+fi
+
+# priority
+if [ ${#} -lt 1 ]; then
+  echo "${drm_program_name}: Either priority or module must be specified"
+  echo
+  drm_usage
+  exit 1
+fi
+if echo ${1} | grep "^${drm_priority_regex}"$ > /dev/null 2> /dev/null; then
+  drm_priority="${1}"
+  shift
+elif echo ${1} | grep "^${drm_module_regex}"$ > /dev/null 2> /dev/null; then
+  drm_module="${1}"
+  shift
+else
+  echo "${drm_program_name}: Invalid argument: \"${1}\""
+  echo "${drm_program_name}: Either priority or module must be specified"
+  echo "${drm_program_name}: Priority must match the regular expression: \"${drm_priority_regex}\""
+  echo "${drm_program_name}: Module must match the regular expression: \"${drm_module_regex}\""
+  exit 1
+fi
+
+# make common functions available
+source "${drm_path_libexec}/command/drm-module"
+
+# priority (if specified) must be used
+if [ "x${drm_priority}" != "x" ]; then
+  drm_prios_enabled=( `echo "$(drm_modules_enabled_ls)" | cut -d$'\t' -f1` )
+  if [ "`echo "${drm_prios_enabled[@]}" | grep -c "\<${drm_priority}\>"`" != "1" ]; then
+    echo "${drm_program_name}: Priority not used: ${drm_priority}"
+    exit 1
+  fi
+  drm_rm_mod_command="rm ${drm_path_work}/scripts/${drm_priority}_*.sh"
+  drm_rm_mod_message="${drm_program_name}: Removing module with priority ${drm_priority}: ${drm_rm_mod_command}"
+fi
+
+# module (if specified) must be used
+if [ "x${drm_module}" != "x" ]; then
+  drm_mods_enabled=( `echo "$(drm_modules_enabled_ls)" | cut -d$'\t' -f2` )
+  if [ "`echo "${drm_mods_enabled[@]}" | grep -c "\<${drm_module}\>"`" != "1" ]; then
+    echo "${drm_program_name}: Module not used: \"${drm_module}\""
+    exit 1
+  fi
+  drm_rm_mod_command="rm ${drm_path_work}/scripts/*_${drm_module}.sh"
+  drm_rm_mod_message="${drm_program_name}: Removing module \"${drm_module}\": ${drm_rm_mod_command}"
+fi
+
+# remove module
+if [ "x${drm_verbose}" != "x" ]; then
+  echo "${drm_rm_mod_message}"
+fi
+if [ "x${drm_dry_run}" == "x" ]; then
+  eval "${drm_rm_mod_command}"
+fi
+
+
+# vim: set ts=2 sw=2 et:
+
+
