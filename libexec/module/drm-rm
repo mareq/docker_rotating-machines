@@ -7,7 +7,7 @@ drm_program_name="${drm_program_name} ${0##*/drm-}"
 function drm_usage()
 {
     cat <<EOF
-Creates new Docker image for "rotating machine".
+Removes specified module from the list of enabled modules.
 
 Usage: ${drm_program_name} <priority> [options]
    or: ${drm_program_name} <module> [options]
